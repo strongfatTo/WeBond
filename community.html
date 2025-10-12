@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community - WeBond</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        .glass-nav {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(249, 115, 22, 0.3);
+        }
+        .forum-category {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .forum-category:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(30, 58, 138, 0.3);
+        }
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.35s;
+            transform-origin: 50% 50%;
+        }
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+        }
+        .tab-button:not(.active) {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+        .tab-button:not(.active):hover {
+            background: #e5e7eb;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+    <!-- Navigation -->
+    <nav class="glass-nav fixed top-0 left-0 right-0 z-50 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-emerald-500 rounded-lg flex items-center justify-center">
+                    <span class="text-white font-bold text-lg">W</span>
+                </div>
+                <span class="text-white font-bold text-xl">WeBond</span>
+            </div>
+            <div class="flex items-center space-x-8">
+                <a href="index.html" class="text-white hover:text-orange-300 transition-colors">Home</a>
+                <a href="dashboard.html" class="text-white hover:text-orange-300 transition-colors">Dashboard</a>
+                <a href="matching.html" class="text-white hover:text-orange-300 transition-colors">Find Matches</a>
+                <div class="w-8 h-8 bg-gray-300 rounded-full"></div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="pt-20 p-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Community Hub</h1>
+                <p class="text-gray-600">Connect, share, and learn with fellow community members</p>
+            </div>
+
+            <!-- Cultural Exchange Progress -->
+            <div class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl p-6 mb-8">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xl font-bold mb-2">Your Cultural Exchange Journey</h3>
+                        <p class="text-emerald-100">Track your progress in learning about Hong Kong culture</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-3xl font-bold">Level 3</div>
+                        <div class="text-sm text-emerald-100">Culture Explorer</div>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="flex justify-between text-sm mb-2">
+                        <span>Progress to Level 4</span>
+                        <span>750/1000 XP</span>
+                    </div>
+                    <div class="w-full bg-emerald-700 rounded-full h-3">
+                        <div class="bg-white h-3 rounded-full" style="width: 75%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Grid -->
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Forum Categories -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+                        <h2 class="text-xl font-bold text-gray-900 mb-6">Discussion Forums</h2>
+                        <div class="grid md:grid-cols-2 gap-4" id="forum-categories">
+                            <!-- Categories will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Active Discussions -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-bold text-gray-900">Active Discussions</h2>
+                            <div class="flex space-x-2">
+                                <button class="tab-button active" data-tab="trending">Trending</button>
+                                <button class="tab-button" data-tab="recent">Recent</button>
+                                <button class="tab-button" data-tab="unanswered">Unanswered</button>
+                            </div>
+                        </div>
+                        <div id="discussions-container">
+                            <!-- Discussions will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- Quick Stats -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4">Community Stats</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-600">Active Members</span>
+                                <span class="font-bold text-gray-900">12,847</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-600">Discussions Today</span>
+                                <span class="font-bold text-gray-900">234</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-600">Helpful Answers</span>
+                                <span class="font-bold text-gray-900">1,892</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-600">Cultural Exchanges</span>
+                                <span class="font-bold text-gray-900">456</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cultural Learning Tracker -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4">Cultural Learning</h3>
+                        <div class="space-y-4" id="cultural-activities">
+                            <!-- Activities will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Upcoming Events -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4">Upcoming Events</h3>
+                        <div class="space-y-4" id="upcoming-events">
+                            <!-- Events will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Community Leaders -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4">Community Leaders</h3>
+                        <div class="space-y-3" id="community-leaders">
+                            <!-- Leaders will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadForumCategories();
+            loadDiscussions();
+            loadCulturalActivities();
+            loadUpcomingEvents();
+            loadCommunityLeaders();
+            initializeTabs();
+        });
+
+        function loadForumCategories() {
+            const categoriesContainer = document.getElementById('forum-categories');
+            const categories = [
+                {
+                    title: 'Academic Help',
+                    description: 'Study tips, course guidance, academic support',
+                    icon: '📚',
+                    posts: 1.2,
+                    color: 'from-blue-600 to-blue-700'
+                },
+                {
+                    title: 'Daily Life',
+                    description: 'Shopping, transportation, daily tips',
+                    icon: '🏠',
+                    posts: 890,
+                    color: 'from-emerald-600 to-emerald-700'
+                },
+                {
+                    title: 'Cultural Exchange',
+                    description: 'Share traditions, learn customs',
+                    icon: '🌍',
+                    posts: 654,
+                    color: 'from-purple-600 to-purple-700'
+                },
+                {
+                    title: 'Language Learning',
+                    description: 'Cantonese, Mandarin practice partners',
+                    icon: '💬',
+                    posts: 432,
+                    color: 'from-orange-600 to-orange-700'
+                },
+                {
+                    title: 'Food & Dining',
+                    description: 'Local cuisine, restaurant recommendations',
+                    icon: '🍜',
+                    posts: 1.1,
+                    color: 'from-red-600 to-red-700'
+                },
+                {
+                    title: 'Emergency Support',
+                    description: 'Urgent help, crisis assistance',
+                    icon: '🆘',
+                    posts: 234,
+                    color: 'from-pink-600 to-pink-700'
+                }
+            ];
+
+            categoriesContainer.innerHTML = categories.map(category => `
+                <div class="forum-category bg-gradient-to-r ${category.color}" onclick="openCategory('${category.title}')">
+                    <div class="text-3xl mb-2">${category.icon}</div>
+                    <h3 class="font-bold text-lg mb-2">${category.title}</h3>
+                    <p class="text-sm opacity-90 mb-3">${category.description}</p>
+                    <div class="text-xs opacity-75">${category.posts}k posts</div>
+                </div>
+            `).join('');
+        }
+
+        function loadDiscussions() {
+            const discussionsContainer = document.getElementById('discussions-container');
+            const discussions = [
+                {
+                    title: 'Best places to study late at night in Hong Kong?',
+                    author: 'Sarah Kim',
+                    replies: 23,
+                    views: 456,
+                    category: 'Academic Help',
+                    time: '2 hours ago',
+                    avatar: 'https://kimi-web-img.moonshot.cn/img/www.cambridgenetwork.com/f2b8238c91d4e1251e40ec2cc41d45f42f211128.jpg',
+                    trending: true
+                },
+                {
+                    title: 'Cantonese pronunciation tips for beginners',
+                    author: 'David Wong',
+                    replies: 45,
+                    views: 892,
+                    category: 'Language Learning',
+                    time: '4 hours ago',
+                    avatar: 'https://kimi-web-img.moonshot.cn/img/cdn.i-scmp.com/eca71b65fbcf675ccc0d80333e5dd911d975aaf0.jpg',
+                    trending: true
+                },
+                {
+                    title: 'Traditional Hong Kong breakfast recommendations',
+                    author: 'Emily Chen',
+                    replies: 18,
+                    views: 234,
+                    category: 'Food & Dining',
+                    time: '6 hours ago',
+                    avatar: 'resources/cultural-exchange.png',
+                    trending: false
+                },
+                {
+                    title: 'How to navigate MTR during rush hour?',
+                    author: 'Michael Liu',
+                    replies: 34,
+                    views: 567,
+                    category: 'Daily Life',
+                    time: '8 hours ago',
+                    avatar: 'https://kimi-web-img.moonshot.cn/img/zolimacitymag.com/ac757feea915fa451f9644257e4842c515685581.webp',
+                    trending: true
+                },
+                {
+                    title: 'Understanding local etiquette and customs',
+                    author: 'Lisa Chan',
+                    replies: 28,
+                    views: 445,
+                    category: 'Cultural Exchange',
+                    time: '12 hours ago',
+                    avatar: 'https://kimi-web-img.moonshot.cn/img/img.freepik.com/35bb534a0f5da8b7609f48eb310e5674eb5396b2.jpg',
+                    trending: false
+                }
+            ];
+
+            discussionsContainer.innerHTML = discussions.map(discussion => `
+                <div class="border-b border-gray-200 py-4 hover:bg-gray-50 px-4 rounded-lg cursor-pointer" onclick="openDiscussion('${discussion.title}')">
+                    <div class="flex items-start space-x-4">
+                        <img src="${discussion.avatar}" alt="${discussion.author}" class="w-10 h-10 rounded-full object-cover">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <h4 class="font-semibold text-gray-900 hover:text-blue-600">${discussion.title}</h4>
+                                ${discussion.trending ? '<span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">🔥 Trending</span>' : ''}
+                            </div>
+                            <div class="flex items-center space-x-4 text-sm text-gray-600">
+                                <span>by ${discussion.author}</span>
+                                <span>•</span>
+                                <span>${discussion.time}</span>
+                                <span>•</span>
+                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded">${discussion.category}</span>
+                            </div>
+                            <div class="flex items-center space-x-4 text-sm text-gray-500 mt-2">
+                                <span>${discussion.replies} replies</span>
+                                <span>•</span>
+                                <span>${discussion.views} views</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadCulturalActivities() {
+            const activitiesContainer = document.getElementById('cultural-activities');
+            const activities = [
+                {
+                    title: 'Learn Cantonese Greetings',
+                    progress: 85,
+                    xp: 50,
+                    icon: '👋',
+                    completed: false
+                },
+                {
+                    title: 'Try Traditional Tea Ceremony',
+                    progress: 60,
+                    xp: 100,
+                    icon: '🍵',
+                    completed: false
+                },
+                {
+                    title: 'Visit Local Temple',
+                    progress: 100,
+                    xp: 150,
+                    icon: '🏛️',
+                    completed: true
+                },
+                {
+                    title: 'Order Food in Cantonese',
+                    progress: 30,
+                    xp: 75,
+                    icon: '🥢',
+                    completed: false
+                }
+            ];
+
+            activitiesContainer.innerHTML = activities.map(activity => `
+                <div class="border border-gray-200 rounded-lg p-4 ${activity.completed ? 'bg-emerald-50' : ''}">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xl">${activity.icon}</span>
+                            <span class="font-medium text-gray-900">${activity.title}</span>
+                        </div>
+                        ${activity.completed ? '<span class="text-emerald-600 text-sm">✓ Complete</span>' : `<span class="text-orange-600 text-sm">${activity.xp} XP</span>`}
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                        <div class="bg-gradient-to-r from-orange-500 to-emerald-500 h-2 rounded-full" style="width: ${activity.progress}%"></div>
+                    </div>
+                    <div class="text-xs text-gray-600">${activity.progress}% complete</div>
+                </div>
+            `).join('');
+        }
+
+        function loadUpcomingEvents() {
+            const eventsContainer = document.getElementById('upcoming-events');
+            const events = [
+                {
+                    title: 'Mid-Autumn Festival Celebration',
+                    date: 'Oct 15, 2025',
+                    time: '6:00 PM',
+                    location: 'Victoria Park',
+                    participants: 45,
+                    type: 'Cultural'
+                },
+                {
+                    title: 'Language Exchange Meetup',
+                    date: 'Oct 18, 2025',
+                    time: '7:00 PM',
+                    location: 'Central Library',
+                    participants: 23,
+                    type: 'Language'
+                },
+                {
+                    title: 'Hong Kong Food Tour',
+                    date: 'Oct 20, 2025',
+                    time: '12:00 PM',
+                    location: 'Mong Kok',
+                    participants: 18,
+                    type: 'Food'
+                }
+            ];
+
+            eventsContainer.innerHTML = events.map(event => `
+                <div class="border border-gray-200 rounded-lg p-4 card-hover">
+                    <div class="flex items-start justify-between mb-2">
+                        <h4 class="font-medium text-gray-900">${event.title}</h4>
+                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">${event.type}</span>
+                    </div>
+                    <div class="text-sm text-gray-600 space-y-1">
+                        <div>📅 ${event.date}</div>
+                        <div>🕕 ${event.time}</div>
+                        <div>📍 ${event.location}</div>
+                        <div>👥 ${event.participants} attending</div>
+                    </div>
+                    <button class="w-full mt-3 bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                        Join Event
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function loadCommunityLeaders() {
+            const leadersContainer = document.getElementById('community-leaders');
+            const leaders = [
+                {
+                    name: 'David Wong',
+                    role: 'Top Helper',
+                    contributions: 342,
+                    avatar: 'https://kimi-web-img.moonshot.cn/img/cdn.i-scmp.com/eca71b65fbcf675ccc0d80333e5dd911d975aaf0.jpg',
+                    badge: '🏆'
+                },
+                {
+                    name: 'Lisa Chan',
+                    role: 'Culture Ambassador',
+                    contributions: 287,
+                    avatar: 'https://kimi-web-img.moonshot.cn/img/www.cambridgenetwork.com/f2b8238c91d4e1251e40ec2cc41d45f42f211128.jpg',
+                    badge: '🌟'
+                },
+                {
+                    name: 'Kevin Liu',
+                    role: 'Academic Mentor',
+                    contributions: 198,
+                    avatar: 'https://kimi-web-img.moonshot.cn/img/zolimacitymag.com/ac757feea915fa451f9644257e4842c515685581.webp',
+                    badge: '🎓'
+                }
+            ];
+
+            leadersContainer.innerHTML = leaders.map(leader => `
+                <div class="flex items-center space-x-3">
+                    <div class="relative">
+                        <img src="${leader.avatar}" alt="${leader.name}" class="w-10 h-10 rounded-full object-cover">
+                        <span class="absolute -top-1 -right-1 text-sm">${leader.badge}</span>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="font-medium text-gray-900">${leader.name}</h4>
+                        <p class="text-sm text-gray-600">${leader.role}</p>
+                        <p class="text-xs text-gray-500">${leader.contributions} contributions</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function initializeTabs() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    // Load discussions based on active tab
+                    loadDiscussions();
+                });
+            });
+        }
+
+        function openCategory(categoryName) {
+            alert(`Opening ${categoryName} forum...`);
+            // Here you would typically navigate to the specific forum category
+        }
+
+        function openDiscussion(discussionTitle) {
+            alert(`Opening discussion: "${discussionTitle}"...`);
+            // Here you would typically navigate to the specific discussion
+        }
+    </script>
+</body>
+</html>
