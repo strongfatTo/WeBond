@@ -11,7 +11,7 @@ WeBond connects non-local residents (international students, expats, immigrants)
 ### ✅ Implemented Features (Phase 1-2)
 
 **Infrastructure:**
-- ✅ Project structure (mobile/, api/, ai-service/, shared/)
+- ✅ Project structure (mobile/, backend/, ai-service/, shared/)
 - ✅ Docker Compose setup (PostgreSQL, Redis, services)
 - ✅ Complete Prisma schema (8 entities)
 - ✅ Authentication system (JWT-based)
@@ -48,7 +48,7 @@ WeBond connects non-local residents (international students, expats, immigrants)
 ```
 WeBond/
 ├── mobile/          # React Native mobile app (iOS/Android)
-├── api/             # Node.js + Express + Prisma API
+├── backend/         # Node.js + Express + Prisma Backend
 ├── ai-service/      # Python + FastAPI AI matching engine
 ├── shared/          # Shared TypeScript types
 ├── specs/           # Feature specifications

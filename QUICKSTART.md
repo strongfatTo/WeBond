@@ -18,7 +18,7 @@ I'll create a simplified demo API that works without PostgreSQL/Redis for quick 
 #### 1. Install API Dependencies (2 minutes)
 
 ```powershell
-cd api
+cd backend
 npm install
 ```
 
@@ -27,7 +27,7 @@ npm install
 **Option A: Use Cloud Database (Easiest)**
 - Sign up for free at [Neon](https://neon.tech/) or [Supabase](https://supabase.com/)
 - Get your PostgreSQL connection string
-- Update `api/.env`:
+- Update `backend/.env`:
 ```env
 DATABASE_URL=postgresql://your_connection_string_here
 ```
@@ -40,7 +40,7 @@ CREATE DATABASE webond;
 CREATE USER webond WITH PASSWORD 'webond_dev_password';
 GRANT ALL PRIVILEGES ON DATABASE webond TO webond;
 ```
-- Update `api/.env`:
+- Update `backend/.env`:
 ```env
 DATABASE_URL=postgresql://webond:webond_dev_password@localhost:5432/webond
 ```
@@ -48,12 +48,12 @@ DATABASE_URL=postgresql://webond:webond_dev_password@localhost:5432/webond
 #### 3. Initialize Database (1 minute)
 
 ```powershell
-cd api
+cd backend
 npx prisma generate
 npx prisma migrate dev --name init
 ```
 
-#### 4. Start API Server
+#### 4. Start Backend Server
 
 ```powershell
 npm run dev
@@ -61,7 +61,7 @@ npm run dev
 
 You should see:
 ```
-🚀 WeBond API running on port 3000
+🚀 WeBond Backend running on port 3000
 📚 Health check: http://localhost:3000/health
 ```
 
@@ -92,7 +92,7 @@ $body = @{
     role = "raiser"
 } | ConvertTo-Json
 
-Invoke-RestMethod -Uri "http://localhost:3000/api/auth/register" -Method Post -Body $body -ContentType "application/json"
+Invoke-RestMethod -Uri "http://localhost:3000/backend/auth/register" -Method Post -Body $body -ContentType "application/json"
 ```
 
 **2. Create a task:**
@@ -112,7 +112,7 @@ $taskBody = @{
     rewardAmount = 200
 } | ConvertTo-Json
 
-Invoke-RestMethod -Uri "http://localhost:3000/api/tasks" -Method Post -Body $taskBody -Headers $headers -ContentType "application/json"
+Invoke-RestMethod -Uri "http://localhost:3000/backend/tasks" -Method Post -Body $taskBody -Headers $headers -ContentType "application/json"
 ```
 
 ---
@@ -121,7 +121,7 @@ Invoke-RestMethod -Uri "http://localhost:3000/api/tasks" -Method Post -Body $tas
 
 ### "Cannot find module" errors
 ```powershell
-cd api
+cd backend
 rm -r node_modules
 rm package-lock.json
 npm install
@@ -129,13 +129,13 @@ npm install
 
 ### Port 3000 already in use
 ```powershell
-# Edit api/.env and change:
+# Edit backend/.env and change:
 PORT=3001
 ```
 
 ### Prisma errors
 ```powershell
-cd api
+cd backend
 npx prisma generate
 npx prisma migrate reset --force
 npx prisma migrate dev
@@ -167,7 +167,7 @@ Want to test the code structure without running servers?
 
 ```powershell
 # Check if TypeScript compiles
-cd api
+cd backend
 npx tsc --noEmit
 ```
 

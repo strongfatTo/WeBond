@@ -26,10 +26,10 @@ If you have PostgreSQL and Redis installed locally:
 
 ---
 
-## 📦 Step 2: Setup API
+## 📦 Step 2: Setup Backend
 
 ```bash
-cd api
+cd backend
 
 # Install dependencies
 npm install
@@ -40,13 +40,13 @@ npx prisma generate
 # Run database migrations
 npx prisma migrate dev --name init
 
-# Start API server
+# Start Backend server
 npm run dev
 ```
 
 **Expected output:**
 ```
-🚀 WeBond API running on port 3000
+🚀 WeBond Backend running on port 3000
 📚 Health check: http://localhost:3000/health
 ```
 
@@ -65,7 +65,7 @@ Expected response:
 {
   "status": "ok",
   "timestamp": "2025-10-20T...",
-  "service": "webond-api",
+  "service": "webond-backend",
   "version": "1.0.0"
 }
 ```
@@ -77,7 +77,7 @@ Expected response:
 **1. Register as a Task Raiser (International Student)**
 
 ```bash
-curl -X POST http://localhost:3000/api/auth/register \
+curl -X POST http://localhost:3000/backend/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "email": "maria@student.hku.hk",
@@ -94,7 +94,7 @@ curl -X POST http://localhost:3000/api/auth/register \
 **2. Login**
 
 ```bash
-curl -X POST http://localhost:3000/api/auth/login \
+curl -X POST http://localhost:3000/backend/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "maria@student.hku.hk",
@@ -107,7 +107,7 @@ curl -X POST http://localhost:3000/api/auth/login \
 Replace `YOUR_TOKEN` with the token from step 1 or 2:
 
 ```bash
-curl -X POST http://localhost:3000/api/tasks \
+curl -X POST http://localhost:3000/backend/tasks \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -127,7 +127,7 @@ curl -X POST http://localhost:3000/api/tasks \
 Get the task ID from step 3 response, then:
 
 ```bash
-curl -X POST http://localhost:3000/api/tasks/TASK_ID/publish \
+curl -X POST http://localhost:3000/backend/tasks/TASK_ID/publish \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
@@ -138,7 +138,7 @@ curl -X POST http://localhost:3000/api/tasks/TASK_ID/publish \
 **1. Register as a Task Solver (Local Helper)**
 
 ```bash
-curl -X POST http://localhost:3000/api/auth/register \
+curl -X POST http://localhost:3000/backend/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "email": "david@helper.hk",
@@ -156,25 +156,25 @@ curl -X POST http://localhost:3000/api/auth/register \
 
 ```bash
 # All active tasks
-curl http://localhost:3000/api/tasks?status=active
+curl http://localhost:3000/backend/tasks?status=active
 
 # Filter by category
-curl http://localhost:3000/api/tasks?status=active&category=visa_help
+curl http://localhost:3000/backend/tasks?status=active&category=visa_help
 
 # Filter by reward range
-curl "http://localhost:3000/api/tasks?status=active&minReward=200&maxReward=500"
+curl "http://localhost:3000/backend/tasks?status=active&minReward=200&maxReward=500"
 ```
 
 **3. View Task Details**
 
 ```bash
-curl http://localhost:3000/api/tasks/TASK_ID
+curl http://localhost:3000/backend/tasks/TASK_ID
 ```
 
 **4. Accept the Task**
 
 ```bash
-curl -X POST http://localhost:3000/api/tasks/TASK_ID/accept \
+curl -X POST http://localhost:3000/backend/tasks/TASK_ID/accept \
   -H "Authorization: Bearer DAVID_TOKEN"
 ```
 
@@ -184,13 +184,13 @@ curl -X POST http://localhost:3000/api/tasks/TASK_ID/accept \
 
 ```bash
 # Browse all active tasks (public)
-curl http://localhost:3000/api/tasks?status=active&page=1&limit=10
+curl http://localhost:3000/backend/tasks?status=active&page=1&limit=10
 
 # Search by category
-curl http://localhost:3000/api/tasks?status=active&category=translation
+curl http://localhost:3000/backend/tasks?status=active&category=translation
 
 # View specific task details
-curl http://localhost:3000/api/tasks/TASK_ID
+curl http://localhost:3000/backend/tasks/TASK_ID
 ```
 
 ---
@@ -211,7 +211,7 @@ echo ""
 
 # Register Task Raiser
 echo "1️⃣ Registering Task Raiser (Maria)..."
-RAISER_RESPONSE=$(curl -s -X POST $API_URL/api/auth/register \
+RAISER_RESPONSE=$(curl -s -X POST $API_URL/backend/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "email": "maria@test.com",
@@ -227,7 +227,7 @@ echo ""
 
 # Create Task
 echo "2️⃣ Creating Task..."
-TASK_RESPONSE=$(curl -s -X POST $API_URL/api/tasks \
+TASK_RESPONSE=$(curl -s -X POST $API_URL/backend/tasks \
   -H "Authorization: Bearer $RAISER_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -244,14 +244,14 @@ echo ""
 
 # Publish Task
 echo "3️⃣ Publishing Task..."
-curl -s -X POST $API_URL/api/tasks/$TASK_ID/publish \
+curl -s -X POST $API_URL/backend/tasks/$TASK_ID/publish \
   -H "Authorization: Bearer $RAISER_TOKEN" > /dev/null
 echo "✅ Task published!"
 echo ""
 
 # Register Solver
 echo "4️⃣ Registering Task Solver (David)..."
-SOLVER_RESPONSE=$(curl -s -X POST $API_URL/api/auth/register \
+SOLVER_RESPONSE=$(curl -s -X POST $API_URL/backend/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "email": "david@test.com",
@@ -267,19 +267,19 @@ echo ""
 
 # Browse Tasks
 echo "5️⃣ David browsing available tasks..."
-curl -s $API_URL/api/tasks?status=active | head -20
+curl -s $API_URL/backend/tasks?status=active | head -20
 echo ""
 
 # Accept Task
 echo "6️⃣ David accepting the task..."
-curl -s -X POST $API_URL/api/tasks/$TASK_ID/accept \
+curl -s -X POST $API_URL/backend/tasks/$TASK_ID/accept \
   -H "Authorization: Bearer $SOLVER_TOKEN" > /dev/null
 echo "✅ Task accepted!"
 echo ""
 
 # View Task Details
 echo "7️⃣ Final task status:"
-curl -s $API_URL/api/tasks/$TASK_ID | python -m json.tool
+curl -s $API_URL/backend/tasks/$TASK_ID | python -m json.tool
 echo ""
 
 echo "🎉 Demo Complete!"
@@ -310,7 +310,7 @@ $raiserBody = @{
     role = "raiser"
 } | ConvertTo-Json
 
-$raiserResponse = Invoke-RestMethod -Uri "$API_URL/api/auth/register" -Method Post -Body $raiserBody -ContentType "application/json"
+$raiserResponse = Invoke-RestMethod -Uri "$API_URL/backend/auth/register" -Method Post -Body $raiserBody -ContentType "application/json"
 $raiserToken = $raiserResponse.accessToken
 Write-Host "✅ Maria registered!" -ForegroundColor Green
 Write-Host ""
@@ -330,14 +330,14 @@ $headers = @{
     "Content-Type" = "application/json"
 }
 
-$taskResponse = Invoke-RestMethod -Uri "$API_URL/api/tasks" -Method Post -Body $taskBody -Headers $headers
+$taskResponse = Invoke-RestMethod -Uri "$API_URL/backend/tasks" -Method Post -Body $taskBody -Headers $headers
 $taskId = $taskResponse.id
 Write-Host "✅ Task created! ID: $taskId" -ForegroundColor Green
 Write-Host ""
 
 # Publish Task
 Write-Host "3️⃣ Publishing Task..." -ForegroundColor Cyan
-Invoke-RestMethod -Uri "$API_URL/api/tasks/$taskId/publish" -Method Post -Headers $headers | Out-Null
+Invoke-RestMethod -Uri "$API_URL/backend/tasks/$taskId/publish" -Method Post -Headers $headers | Out-Null
 Write-Host "✅ Task published!" -ForegroundColor Green
 Write-Host ""
 
@@ -351,7 +351,7 @@ $solverBody = @{
     role = "solver"
 } | ConvertTo-Json
 
-$solverResponse = Invoke-RestMethod -Uri "$API_URL/api/auth/register" -Method Post -Body $solverBody -ContentType "application/json"
+$solverResponse = Invoke-RestMethod -Uri "$API_URL/backend/auth/register" -Method Post -Body $solverBody -ContentType "application/json"
 $solverToken = $solverResponse.accessToken
 Write-Host "✅ David registered!" -ForegroundColor Green
 Write-Host ""
@@ -361,13 +361,13 @@ Write-Host "5️⃣ David accepting the task..." -ForegroundColor Cyan
 $solverHeaders = @{
     Authorization = "Bearer $solverToken"
 }
-Invoke-RestMethod -Uri "$API_URL/api/tasks/$taskId/accept" -Method Post -Headers $solverHeaders | Out-Null
+Invoke-RestMethod -Uri "$API_URL/backend/tasks/$taskId/accept" -Method Post -Headers $solverHeaders | Out-Null
 Write-Host "✅ Task accepted!" -ForegroundColor Green
 Write-Host ""
 
 # View Final Status
 Write-Host "6️⃣ Final task status:" -ForegroundColor Cyan
-$finalTask = Invoke-RestMethod -Uri "$API_URL/api/tasks/$taskId"
+$finalTask = Invoke-RestMethod -Uri "$API_URL/backend/tasks/$taskId"
 $finalTask | ConvertTo-Json -Depth 3
 Write-Host ""
 
@@ -410,7 +410,7 @@ docker-compose ps
 ### Prisma Client Not Generated
 
 ```bash
-cd api
+cd backend
 npx prisma generate
 ```
 

@@ -460,7 +460,7 @@
         async function loadUserTasks() {
             try {
                 // Get tasks where user is involved (as raiser or solver)
-                const response = await fetch(`${API_URL}/api/tasks?status=in_progress`, {
+                const response = await fetch(`${API_URL}/backend/tasks?status=in_progress`, {
                     headers: { 'Authorization': `Bearer ${currentToken}` }
                 });
 
