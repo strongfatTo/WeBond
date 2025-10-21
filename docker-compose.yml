@@ -49,6 +49,9 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       AI_SERVICE_URL: http://ai-service:8000
+      SUPABASE_URL: https://mqghigpyrjpjchbstdhq.supabase.co
+      SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xZ2hpZ3B5cmpwamNoYnN0ZGhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0MjI0MzksImV4cCI6MjA3NTk5ODQzOX0.H1EQwi3ydfY3vQFHohqxmlnWAvnQKJjHe0koYLALCQM
+      SUPABASE_SERVICE_ROLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xZ2hpZ3B5cmpwamNoYnN0ZGhxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDQyMjQzOSwiZXhwIjoyMDc1OTk4NDM5fQ.wFCLBRtZQVKFGrMxfP_oLRP5A2KBeXHNQ_O481IN0uo
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -57,7 +60,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: npm run dev
+    command: npm run start:dev
 
   # AI Matching Service
   ai-service:
