@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeBond - Platform Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="app.css">
+    <link rel="stylesheet" href="modern-styles.css">
+</head>
+<body>
+    <!-- Animated Background Icons -->
+    <div class="floating-icons">
+        <div class="floating-icon">🎓</div>
+        <div class="floating-icon">💰</div>
+        <div class="floating-icon">📚</div>
+        <div class="floating-icon">💵</div>
+        <div class="floating-icon">🎯</div>
+        <div class="floating-icon">💳</div>
+        <div class="floating-icon">📖</div>
+        <div class="floating-icon">💸</div>
+        <div class="floating-icon">🏆</div>
+        <div class="floating-icon">🎓</div>
+        <div class="floating-icon">💰</div>
+        <div class="floating-icon">📝</div>
+    </div>
+
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="logo" onclick="window.location.href='index.html'" style="cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 1.8rem;">🎓🤝💰</span>
+            <span style="font-weight: 800; color: #2c3e50;">WEBOND</span>
+        </div>
+        <div class="user-menu">
+            <div id="userDisplay" class="hidden">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div>
+                        <div id="userName" style="font-weight: 600;">User Name</div>
+                        <div id="userRole" style="font-size: 0.85rem; color: var(--text-light);">Role</div>
+                    </div>
+                </div>
+            </div>
+            <button id="authButton" class="btn btn-primary" onclick="showAuthModal()">Sign In</button>
+            <button id="logoutButton" class="btn btn-outline hidden" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <!-- Main App Container -->
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <nav>
+                <div class="nav-item active" onclick="showPage('dashboard')" data-page="dashboard">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-item" onclick="showPage('browse')" data-page="browse">
+                    <i class="fas fa-search"></i>
+                    <span>Browse Tasks</span>
+                </div>
+                <div class="nav-item" onclick="showPage('create')" data-page="create">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Create Task</span>
+                </div>
+                <div class="nav-item" onclick="showPage('chat')" data-page="chat">
+                    <i class="fas fa-comments"></i>
+                    <span>Messages</span>
+                </div>
+                <div class="nav-item" onclick="showPage('wallet')" data-page="wallet">
+                    <i class="fas fa-wallet"></i>
+                    <span>Wallet</span>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <div id="dashboard" class="page active">
+                <div class="page-header">
+                    <h1>Welcome to WeBond</h1>
+                    <p>Connect with fellow students. Get help. Earn money. Thrive in Hong Kong. 🎓</p>
+                </div>
+                
+                <div id="dashboardContent">
+                    <div class="card">
+                        <h2>👋 Hey Student!</h2>
+                        <p>Join 3,000+ international and local students helping each other in Hong Kong. Get academic support, earn money, navigate city life - all in one place.</p>
+                        <div style="margin: 1.5rem 0;">
+                            <div style="background: var(--bg-light); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                                <strong>🎓 Need Help?</strong>
+                                <p style="margin: 0.5rem 0 0 0; color: var(--text-light);">Post tasks like: visa applications, assignment help, apartment hunting, translation, city tours</p>
+                            </div>
+                            <div style="background: var(--bg-light); padding: 1rem; border-radius: 8px;">
+                                <strong>💰 Want to Earn?</strong>
+                                <p style="margin: 0.5rem 0 0 0; color: var(--text-light);">Browse tasks and use your skills to help fellow students while earning money</p>
+                            </div>
+                        </div>
+                        <button class="btn-modern" onclick="showAuthModal()" style="border: none; cursor: pointer;">
+                            <i class="fas fa-user-graduate"></i> Join with Student Email 🚀
+                        </button>
+                    </div>
+                </div>
+
+                <div id="dashboardLoggedIn" class="hidden">
+                    <div class="grid">
+                        <div class="card">
+                            <h2><i class="fas fa-tasks"></i> My Tasks</h2>
+                            <p style="font-size: 2rem; font-weight: 800; color: var(--primary);" id="myTasksCount">0</p>
+                            <button class="btn btn-outline" onclick="showPage('browse')">View All</button>
+                        </div>
+                        <div class="card">
+                            <h2><i class="fas fa-comments"></i> Messages</h2>
+                            <p style="font-size: 2rem; font-weight: 800; color: var(--primary);" id="unreadCount">0</p>
+                            <button class="btn btn-outline" onclick="showPage('chat')">Open Chat</button>
+                        </div>
+                        <div class="card">
+                            <h2><i class="fas fa-wallet"></i> Balance</h2>
+                            <p style="font-size: 2rem; font-weight: 800; color: var(--primary);">HKD <span id="dashboardBalance">0</span></p>
+                            <button class="btn btn-outline" onclick="showPage('wallet')">View Wallet</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2>Recent Tasks</h2>
+                        <div id="recentTasks"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Browse Tasks Page -->
+            <div id="browse" class="page">
+                <div class="page-header">
+                    <h1><i class="fas fa-search"></i> Browse Tasks</h1>
+                    <p>Help fellow students and earn money with your skills 💰</p>
+                </div>
+
+                <div class="card">
+                    <div class="form-group">
+                        <label>Filter by Status</label>
+                        <select id="filterStatus" onchange="loadTasks()">
+                            <option value="active">Active</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Filter by Category</label>
+                        <select id="filterCategory" onchange="loadTasks()">
+                            <option value="">All Categories</option>
+                            <option value="translation">Translation</option>
+                            <option value="visa_help">Visa Help</option>
+                            <option value="navigation">Navigation</option>
+                            <option value="shopping">Shopping</option>
+                            <option value="admin_help">Administrative Help</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="loadTasks()">
+                        <i class="fas fa-sync"></i> Refresh
+                    </button>
+                </div>
+
+                <div id="tasksList" class="grid"></div>
+            </div>
+
+            <!-- Create Task Page -->
+            <div id="create" class="page">
+                <div class="page-header">
+                    <h1><i class="fas fa-plus-circle"></i> Create New Task</h1>
+                    <p>Get help from fellow students - from visa apps to assignment help 🎓</p>
+                </div>
+
+                <div id="createStatus"></div>
+
+                <div class="card">
+                    <form id="createTaskForm" onsubmit="createTask(event)">
+                        <div class="form-group">
+                            <label>Task Title *</label>
+                            <input type="text" id="taskTitle" required placeholder="e.g., Help with visa application">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Description * (minimum 20 characters)</label>
+                            <textarea id="taskDescription" required placeholder="Describe what you need help with..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Category *</label>
+                            <select id="taskCategory" required>
+                                <option value="">Select category</option>
+                                <option value="translation">Translation</option>
+                                <option value="visa_help">Visa Help</option>
+                                <option value="navigation">Navigation</option>
+                                <option value="shopping">Shopping</option>
+                                <option value="admin_help">Administrative Help</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Location *</label>
+                            <input type="text" id="taskLocation" required placeholder="e.g., Central, Hong Kong">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Reward Amount (HKD) * (50 - 5000)</label>
+                            <input type="number" id="taskReward" required min="50" max="5000" placeholder="300">
+                        </div>
+
+                        <button type="submit" class="btn-modern" style="border: none; cursor: pointer; width: 100%;">
+                            <i class="fas fa-check"></i> Create & Publish Task 🎯
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Chat Page -->
+            <div id="chat" class="page">
+                <div class="page-header">
+                    <h1><i class="fas fa-comments"></i> Messages</h1>
+                    <p>Chat with fellow students helping you or students you're helping 💬</p>
+                </div>
+
+                <div class="chat-container">
+                    <div class="chat-list">
+                        <h3 style="padding: 0 0 1rem 0;">Active Chats</h3>
+                        <div id="chatList"></div>
+                    </div>
+
+                    <div class="chat-area" id="chatArea">
+                        <div class="empty-state">
+                            <i class="fas fa-comments"></i>
+                            <h3>Select a chat to start messaging</h3>
+                            <p>Choose a task from the list to view and send messages</p>
+                        </div>
+                    </div>
+
+                    <div class="chat-area hidden" id="activeChatArea">
+                        <div class="chat-header">
+                            <h3 id="chatTitle">Chat Title</h3>
+                            <p id="chatSubtitle" style="color: var(--text-light); font-size: 0.9rem;">Chatting with...</p>
+                        </div>
+                        <div class="messages" id="messages"></div>
+                        <div class="chat-input">
+                            <input type="text" id="messageInput" placeholder="Type a message..." onkeypress="handleChatKeyPress(event)">
+                            <button class="btn btn-primary" onclick="sendMessage()">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wallet Page -->
+            <div id="wallet" class="page">
+                <div class="page-header">
+                    <h1><i class="fas fa-wallet"></i> Wallet</h1>
+                    <p>Track your earnings and payments - your student side income starts here 💵</p>
+                </div>
+
+                <div class="wallet-card">
+                    <div style="opacity: 0.9;">Available Balance</div>
+                    <div class="balance">HKD <span id="walletBalance">0.00</span></div>
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button class="btn btn-white">
+                            <i class="fas fa-plus"></i> Add Funds
+                        </button>
+                        <button class="btn" style="background: rgba(255,255,255,0.2); color: white;">
+                            <i class="fas fa-arrow-up"></i> Withdraw
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Recent Transactions</h2>
+                    <div id="transactionsList">
+                        <div class="empty-state">
+                            <i class="fas fa-receipt"></i>
+                            <p>No transactions yet</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2><i class="fas fa-credit-card"></i> Payment Methods</h2>
+                    <p style="color: var(--text-light); margin-bottom: 1rem;">Secure payment integration powered by Stripe</p>
+                    <button class="btn btn-outline">
+                        <i class="fas fa-plus"></i> Add Payment Method
+                    </button>
+                </div>
+
+                <div class="card">
+                    <h2><i class="fas fa-shield-alt"></i> Escrow Protection</h2>
+                    <p style="color: var(--text-light);">All payments are held in secure escrow until task completion. Your money is safe with WeBond's automated escrow system.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Welcome to WeBond</h2>
+                <button class="close-modal" onclick="closeAuthModal()">&times;</button>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="showAuthTab('login')">Sign In</button>
+                <button class="tab" onclick="showAuthTab('register')">Sign Up</button>
+            </div>
+
+            <div id="authStatus"></div>
+
+            <!-- Login Form -->
+            <form id="loginForm" onsubmit="login(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn-modern" style="width: 100%; border: none; cursor: pointer;">Sign In 🔐</button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="registerForm" class="hidden" onsubmit="register(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="regEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="regPassword" required>
+                    <small style="color: var(--text-light);">Min 8 chars, 1 uppercase, 1 lowercase, 1 number</small>
+                </div>
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" id="regFirstName" required>
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" id="regLastName" required>
+                </div>
+                <div class="form-group">
+                    <label>Role</label>
+                    <select id="regRole" required>
+                        <option value="raiser">Task Raiser (Need Help)</option>
+                        <option value="solver">Task Solver (Can Help)</option>
+                        <option value="both">Both</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-modern" style="width: 100%; border: none; cursor: pointer;">Create Account ✨</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

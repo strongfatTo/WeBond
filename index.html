@@ -3,461 +3,809 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WeBond - Bridging Communities Through AI-Powered Connections</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>WeBond - AI-Powered Connection Platform for Hong Kong</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="modern-styles.css">
     <style>
-        * { font-family: 'Inter', sans-serif; }
-        .hero-bg {
-            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #10b981 100%);
-            background-size: 400% 400%;
-            animation: gradientShift 8s ease-in-out infinite;
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5568d3;
+            --secondary: #764ba2;
+            --accent: #f093fb;
+            --success: #4ade80;
+            --warning: #fbbf24;
+            --error: #ef4444;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --bg-light: #f8fafc;
+            --bg-white: #ffffff;
+            --border: #e2e8f0;
         }
-        @keyframes gradientShift {
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--text-dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            position: relative;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-dark);
+        }
+        
+        .logo img {
+            height: 80px;
+            width: auto;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-outline {
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            background: transparent;
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Animated Background Elements */
+        .floating-icons {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .floating-icon {
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0.15;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-50px) rotate(180deg);
+            }
+        }
+
+        .floating-icon:nth-child(1) { left: 10%; top: 20%; animation-delay: 0s; font-size: 3rem; }
+        .floating-icon:nth-child(2) { left: 20%; top: 60%; animation-delay: 2s; font-size: 2.5rem; }
+        .floating-icon:nth-child(3) { left: 30%; top: 80%; animation-delay: 4s; font-size: 2rem; }
+        .floating-icon:nth-child(4) { left: 50%; top: 40%; animation-delay: 6s; font-size: 3.5rem; }
+        .floating-icon:nth-child(5) { left: 70%; top: 70%; animation-delay: 8s; font-size: 2.8rem; }
+        .floating-icon:nth-child(6) { left: 80%; top: 30%; animation-delay: 10s; font-size: 2.2rem; }
+        .floating-icon:nth-child(7) { left: 85%; top: 85%; animation-delay: 12s; font-size: 3rem; }
+        .floating-icon:nth-child(8) { left: 15%; top: 45%; animation-delay: 14s; font-size: 2.5rem; }
+        .floating-icon:nth-child(9) { left: 65%; top: 15%; animation-delay: 16s; font-size: 2.3rem; }
+        .floating-icon:nth-child(10) { left: 40%; top: 10%; animation-delay: 18s; font-size: 3.2rem; }
+
+        /* Hero Section */
+        .hero {
+            margin-top: 80px;
+            padding: 6rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+            animation: heroGradient 10s ease infinite;
+            background-size: 200% 200%;
+        }
+        
+        @keyframes heroGradient {
             0%, 100% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
         }
-        .glass-nav {
-            backdrop-filter: blur(20px);
-            background: rgba(255, 255, 255, 0.1);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.05)"/></svg>');
+            opacity: 0.3;
         }
+
+        .hero-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .section-container {
+            position: relative;
+            z-index: 10;
+        }
+
+        .hero-content {
+            max-width: 600px;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .hero .btn {
+            font-size: 1.1rem;
+            padding: 1rem 2rem;
+        }
+
+        .btn-white {
+            background: white;
+            color: var(--primary);
+        }
+
+        .btn-white:hover {
+            background: var(--bg-light);
+        }
+
+        .stats {
+            display: flex;
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 6rem 2rem;
+            background: var(--bg-light);
+        }
+
+        .section-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+
+        .section-header p {
+            font-size: 1.2rem;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
         .feature-card {
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            padding: 2.5rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
         }
+
+        .feature-card::before {
+            content: "";
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(227, 164, 251, 0.4), transparent);
+            border-radius: 50%;
+            top: -50px;
+            right: -50px;
+            transition: 0.5s;
+        }
+
         .feature-card:hover {
-            transform: translateY(-8px) rotateX(5deg);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transform: translateY(-12px) rotate(2deg);
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.4);
+            border-color: rgba(255, 255, 255, 0.4);
         }
-        .btn-primary {
-            background: linear-gradient(135deg, #f97316, #ea580c);
-            transition: all 0.3s ease;
+
+        .feature-card:hover::before {
+            width: 150px;
+            height: 150px;
         }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(249, 115, 22, 0.3);
+
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #e3a4fb, #fca7a6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            animation: pulse 2s infinite;
+            box-shadow: 0 10px 30px rgba(227, 164, 251, 0.4);
         }
-        .floating-element {
-            animation: float 6s ease-in-out infinite;
+        
+        .feature-icon::before {
+            content: "";
+            position: absolute;
+            inset: -5px;
+            border-radius: 18px;
+            background: inherit;
+            filter: blur(20px);
+            opacity: 0.6;
+            z-index: -1;
         }
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
         }
-        .text-gradient {
-            background: linear-gradient(135deg, #1e3a8a, #10b981);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+
+        .feature-card p {
+            color: var(--text-light);
+            line-height: 1.8;
+        }
+
+        /* How It Works */
+        .how-it-works {
+            padding: 6rem 2rem;
+            background: white;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .step {
+            text-align: center;
+            position: relative;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+
+        .step h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .step p {
+            color: var(--text-light);
+        }
+
+        /* Tech Stack */
+        .tech-stack {
+            padding: 6rem 2rem;
+            background: var(--bg-light);
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .tech-item {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .tech-item i {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .tech-item h4 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .tech-item p {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        /* CTA Section */
+        .cta {
+            padding: 6rem 2rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            text-align: center;
+        }
+
+        .cta h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .cta p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--text-dark);
+            color: white;
+            padding: 3rem 2rem 1rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-section a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate {
+            animation: fadeInUp 0.6s ease-out;
         }
     </style>
 </head>
-<body class="bg-white text-gray-900 overflow-x-hidden">
+<body>
+    <!-- Animated Background Icons -->
+    <div class="floating-icons">
+        <div class="floating-icon">🎓</div>
+        <div class="floating-icon">💰</div>
+        <div class="floating-icon">📚</div>
+        <div class="floating-icon">💵</div>
+        <div class="floating-icon">🎯</div>
+        <div class="floating-icon">💳</div>
+        <div class="floating-icon">📖</div>
+        <div class="floating-icon">💸</div>
+        <div class="floating-icon">🏆</div>
+        <div class="floating-icon">🎓</div>
+    </div>
+
     <!-- Navigation -->
-    <nav class="glass-nav fixed top-0 left-0 right-0 z-50 px-6 py-4">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-                <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-emerald-500 rounded-lg flex items-center justify-center">
-                    <span class="text-white font-bold text-lg">W</span>
-                </div>
-                <span class="text-white font-bold text-xl">WeBond</span>
+    <nav>
+        <div class="nav-container">
+            <div class="logo">
+                <span style="font-size: 2rem;">🎓🤝💰</span>
+                <span style="font-weight: 800; color: #2c3e50;">WEBOND</span>
             </div>
-            <div class="hidden md:flex items-center space-x-8">
-                <a href="#features" class="text-white hover:text-orange-300 transition-colors">Features</a>
-                <a href="#how-it-works" class="text-white hover:text-orange-300 transition-colors">How It Works</a>
-                <a href="#community" class="text-white hover:text-orange-300 transition-colors">Community</a>
-                <a href="dashboard.html" class="text-white hover:text-orange-300 transition-colors">Dashboard</a>
-                <button class="btn-primary text-white px-6 py-2 rounded-lg font-medium">Get Started</button>
-            </div>
-            <div class="md:hidden">
-                <button id="mobile-menu-btn" class="text-white">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#tech">Technology</a></li>
+                <li><a href="#about">About</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="app.html" class="btn btn-outline">Sign In</a>
+                <a href="app.html" class="btn btn-primary">Get Started</a>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero-bg min-h-screen flex items-center pt-20">
-        <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">
-            <div class="space-y-8">
-                <h1 class="text-5xl lg:text-6xl font-bold text-white leading-tight">
-                    Bridging Communities Through 
-                    <span class="text-orange-300">AI-Powered</span> Connections
-                </h1>
-                <p class="text-xl text-blue-100 leading-relaxed">
-                    Connect international students with local residents in Hong Kong. Share cultures, 
-                    complete tasks, and build meaningful relationships through our intelligent matching platform.
-                </p>
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <button class="btn-primary text-white px-8 py-4 rounded-lg font-semibold text-lg">
-                        Start Connecting
-                    </button>
-                    <button class="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-blue-900 transition-all">
-                        Watch Demo
-                    </button>
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content animate">
+                <h1 class="gradient-text" style="-webkit-text-fill-color: white;">Connect. Help. Earn. Succeed Together.</h1>
+                <p style="font-size: 1.3rem;">The premier platform for international students in Hong Kong. Get academic help, navigate city life, and earn money by assisting fellow students. Built by students, for students. 🔥</p>
+                <div class="hero-actions">
+                    <a href="app.html" class="btn-modern" style="text-decoration: none;">🚀 Start Using WeBond</a>
+                    <a href="app.html" class="btn-neon" style="text-decoration: none;">View Demo</a>
                 </div>
-                <div class="flex items-center space-x-8 text-blue-100">
-                    <div>
-                        <div class="text-2xl font-bold text-white">50K+</div>
-                        <div class="text-sm">Active Users</div>
+                <div class="stats">
+                    <div class="stat">
+                        <span class="stat-number">3,000+</span>
+                        <span class="stat-label">Students Connected</span>
                     </div>
-                    <div>
-                        <div class="text-2xl font-bold text-white">85%+</div>
-                        <div class="text-sm">Success Rate</div>
+                    <div class="stat">
+                        <span class="stat-number">8,500+</span>
+                        <span class="stat-label">Tasks Completed</span>
                     </div>
-                    <div>
-                        <div class="text-2xl font-bold text-white">5min</div>
-                        <div class="text-sm">Avg Match Time</div>
+                    <div class="stat">
+                        <span class="stat-number">HKD 2M+</span>
+                        <span class="stat-label">Earned by Students</span>
                     </div>
                 </div>
-            </div>
-            <div class="relative">
-                <div class="floating-element">
-                    <img src="resources/hero-image.png" alt="WeBond Hero" class="w-full h-auto rounded-2xl shadow-2xl">
-                </div>
-                <div class="absolute -top-4 -right-4 w-24 h-24 bg-orange-400 rounded-full opacity-20"></div>
-                <div class="absolute -bottom-4 -left-4 w-32 h-32 bg-emerald-400 rounded-full opacity-20"></div>
             </div>
         </div>
     </section>
 
     <!-- Features Section -->
-    <section id="features" class="py-20 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gradient mb-4">Powerful Features</h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
-                    Our AI-powered platform combines cutting-edge technology with human-centered design 
-                    to create meaningful connections and foster cultural exchange.
-                </p>
+    <section class="features" id="features">
+        <div class="section-container">
+            <div class="section-header">
+                <h2>Everything Students Need to Thrive in Hong Kong</h2>
+                <p>From visa applications to assignment help, from apartment hunting to earning side income - we've got you covered</p>
             </div>
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div class="feature-card p-8 rounded-2xl border border-gray-200">
-                    <div class="w-16 h-16 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl flex items-center justify-center mb-6">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">AI Smart Matching</h3>
-                    <p class="text-gray-600 leading-relaxed">
-                        Advanced algorithms analyze preferences, skills, and availability to create 
-                        perfect matches between international students and local helpers.
-                    </p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-graduation-cap"></i></div>
+                    <h3>Academic Support</h3>
+                    <p>Get help with assignments, projects, exam prep, or language tutoring from fellow students who excel in those subjects. Exchange knowledge and succeed together.</p>
                 </div>
-                <div class="feature-card p-8 rounded-2xl border border-gray-200">
-                    <div class="w-16 h-16 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-xl flex items-center justify-center mb-6">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Secure Payments</h3>
-                    <p class="text-gray-600 leading-relaxed">
-                        Integrated payment processing with escrow protection ensures safe transactions 
-                        and automatic release upon successful task completion.
-                    </p>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-money-bill-wave"></i></div>
+                    <h3>Earn While Studying</h3>
+                    <p>Use your skills to help other students and earn money. From translation to visa guidance, from city tours to apartment hunting - turn your knowledge into income.</p>
                 </div>
-                <div class="feature-card p-8 rounded-2xl border border-gray-200">
-                    <div class="w-16 h-16 bg-gradient-to-r from-orange-600 to-orange-700 rounded-xl flex items-center justify-center mb-6">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Real-time Chat</h3>
-                    <p class="text-gray-600 leading-relaxed">
-                        Instant messaging with translation features enables seamless communication 
-                        across language barriers and cultural differences.
-                    </p>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-passport"></i></div>
+                    <h3>Visa & Admin Help</h3>
+                    <p>Navigate Hong Kong's bureaucracy with confidence. Get guidance on visa applications, bank accounts, phone plans, and other administrative tasks from experienced students.</p>
                 </div>
-                <div class="feature-card p-8 rounded-2xl border border-gray-200">
-                    <div class="w-16 h-16 bg-gradient-to-r from-purple-600 to-purple-700 rounded-xl flex items-center justify-center mb-6">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Location-based</h3>
-                    <p class="text-gray-600 leading-relaxed">
-                        Find help nearby with our location-aware matching system covering all 
-                        Hong Kong districts and university areas.
-                    </p>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-globe-asia"></i></div>
+                    <h3>Cultural Exchange</h3>
+                    <p>Connect international and local students for authentic cultural experiences. Share languages, traditions, and create lasting friendships beyond transactions.</p>
                 </div>
-                <div class="feature-card p-8 rounded-2xl border border-gray-200">
-                    <div class="w-16 h-16 bg-gradient-to-r from-pink-600 to-pink-700 rounded-xl flex items-center justify-center mb-6">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Cultural Exchange</h3>
-                    <p class="text-gray-600 leading-relaxed">
-                        Built-in cultural learning features help users understand local customs 
-                        and share their own cultural backgrounds.
-                    </p>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                    <h3>Student-Verified Community</h3>
+                    <p>University email verification ensures a safe, trusted student-only environment. Rate and review to build reputation and find reliable help.</p>
                 </div>
-                <div class="feature-card p-8 rounded-2xl border border-gray-200">
-                    <div class="w-16 h-16 bg-gradient-to-r from-indigo-600 to-indigo-700 rounded-xl flex items-center justify-center mb-6">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Verified Users</h3>
-                    <p class="text-gray-600 leading-relaxed">
-                        Comprehensive verification system ensures safety and trust with 
-                        identity checks, skill verification, and rating systems.
-                    </p>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-comments"></i></div>
+                    <h3>Instant Communication</h3>
+                    <p>Real-time chat with automatic translation support. Share files, exchange contacts, and coordinate meetups - all within a secure platform.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- How It Works Section -->
-    <section id="how-it-works" class="py-20 bg-white">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gradient mb-4">How It Works</h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
-                    Getting started with WeBond is simple. Follow these steps to begin your 
-                    cultural exchange journey and find the help you need.
-                </p>
+    <!-- How It Works -->
+    <section class="how-it-works" id="how-it-works">
+        <div class="section-container">
+            <div class="section-header">
+                <h2>How WeBond Works</h2>
+                <p>Get started in minutes and connect with your community</p>
             </div>
-            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <div class="text-center">
-                    <div class="w-20 h-20 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <span class="text-white font-bold text-2xl">1</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-4">Sign Up</h3>
-                    <p class="text-gray-600">
-                        Create your profile and complete verification. Choose whether you're 
-                        seeking help or offering assistance.
-                    </p>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Sign Up with Student Email</h3>
+                    <p>Register using your university email (@hku.hk, @cuhk.edu.hk, etc.). Join a verified student community you can trust.</p>
                 </div>
-                <div class="text-center">
-                    <div class="w-20 h-20 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <span class="text-white font-bold text-2xl">2</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-4">Post or Browse</h3>
-                    <p class="text-gray-600">
-                        International students post tasks they need help with. Local residents 
-                        browse available tasks in their area.
-                    </p>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Need Help or Offer Help?</h3>
+                    <p>Post what you need (visa help, assignment guidance, apartment search) OR browse tasks where you can use your skills to earn money.</p>
                 </div>
-                <div class="text-center">
-                    <div class="w-20 h-20 bg-gradient-to-r from-orange-600 to-orange-700 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <span class="text-white font-bold text-2xl">3</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-4">AI Matching</h3>
-                    <p class="text-gray-600">
-                        Our AI analyzes preferences, location, and availability to suggest 
-                        the best matches for both parties.
-                    </p>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Chat & Coordinate</h3>
+                    <p>Connect with fellow students instantly. Discuss details, share resources, and arrange meetups - all through secure messaging.</p>
                 </div>
-                <div class="text-center">
-                    <div class="w-20 h-20 bg-gradient-to-r from-purple-600 to-purple-700 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <span class="text-white font-bold text-2xl">4</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-4">Connect & Complete</h3>
-                    <p class="text-gray-600">
-                        Chat, arrange meetings, complete tasks, and build lasting 
-                        friendships while learning about different cultures.
-                    </p>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>Complete & Get Paid</h3>
+                    <p>Finish the task safely. Payments held in escrow until completion. Build your reputation with reviews and earn more!</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Success Stories Section -->
-    <section class="py-20 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gradient mb-4">Success Stories</h2>
-                <p class="text-xl text-gray-600">
-                    Real connections, real friendships, real cultural exchange
-                </p>
+    <!-- Tech Stack -->
+    <section class="tech-stack" id="tech">
+        <div class="section-container">
+            <div class="section-header">
+                <h2>Built with Modern Technology</h2>
+                <p>Enterprise-grade architecture for reliability, security, and scale</p>
             </div>
-            <div class="splide" id="success-stories">
-                <div class="splide__track">
-                    <ul class="splide__list">
-                        <li class="splide__slide">
-                            <div class="bg-white p-8 rounded-2xl shadow-lg mx-4">
-                                <div class="flex items-center mb-6">
-                                    <img src="https://kimi-web-img.moonshot.cn/img/www.cambridgenetwork.com/f2b8238c91d4e1251e40ec2cc41d45f42f211128.jpg" alt="Student" class="w-16 h-16 rounded-full object-cover mr-4">
-                                    <div>
-                                        <h4 class="font-bold text-gray-900">Emily Chen</h4>
-                                        <p class="text-gray-600">International Student from Taiwan</p>
-                                    </div>
-                                </div>
-                                <p class="text-gray-700 leading-relaxed mb-4">
-                                    "WeBond helped me find amazing local friends who showed me around Hong Kong. 
-                                    The AI matching was spot on - I connected with people who shared my interests in hiking and photography."
-                                </p>
-                                <div class="flex text-yellow-400">
-                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                    </svg>
-                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                    </svg>
-                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                    </svg>
-                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                    </svg>
-                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="splide__slide">
-                            <div class="bg-white p-8 rounded-2xl shadow-lg mx-4">
-                                <div class="flex items-center mb-6">
-                                    <img src="https://kimi-web-img.moonshot.cn/img/cdn.i-scmp.com/eca71b65fbcf675ccc0d80333e5dd911d975aaf0.jpg" alt="Local Helper" class="w-16 h-16 rounded-full object-cover mr-4">
-                                    <div>
-                                        <h4 class="font-bold text-gray-900">David Wong</h4>
-                                        <p class="text-gray-600">Local Hong Kong Resident</p>
-                                    </div>
-                                </div>
-                                <p class="text-gray-700 leading-relaxed mb-4">
-                                    "As a local, I've made great friends from around the world through WeBond. 
-                                    Helping students navigate Hong Kong has been incredibly rewarding."
-                                </p>
-                                <div class="flex text-yellow-400">
-                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                    </svg>
-                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                    </svg>
-                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                    </svg>
-                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                    </svg>
-                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="splide__slide">
-                            <div class="bg-white p-8 rounded-2xl shadow-lg mx-4">
-                                <div class="flex items-center mb-6">
-                                    <img src="resources/cultural-exchange.png" alt="Cultural Exchange" class="w-16 h-16 rounded-full object-cover mr-4">
-                                    <div>
-                                        <h4 class="font-bold text-gray-900">Sarah Kim</h4>
-                                        <p class="text-gray-600">Student from South Korea</p>
-                                    </div>
-                                </div>
-                                <p class="text-gray-700 leading-relaxed mb-4">
-                                    "The cultural exchange features helped me understand Hong Kong culture better. 
-                                    I even learned some Cantonese phrases from my local friends!"
-                                </p>
-                                <div class="flex text-yellow-400">
-                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                    </svg>
-                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                    </svg>
-                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                    </svg>
-                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                    </svg>
-                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <i class="fab fa-react"></i>
+                    <h4>React Native</h4>
+                    <p>Cross-platform mobile development</p>
+                </div>
+                <div class="tech-item">
+                    <i class="fab fa-node-js"></i>
+                    <h4>Node.js + TypeScript</h4>
+                    <p>High-performance backend</p>
+                </div>
+                <div class="tech-item">
+                    <i class="fab fa-python"></i>
+                    <h4>Python AI Services</h4>
+                    <p>Machine learning & matching</p>
+                </div>
+                <div class="tech-item">
+                    <i class="fas fa-database"></i>
+                    <h4>PostgreSQL</h4>
+                    <p>Reliable data storage</p>
+                </div>
+                <div class="tech-item">
+                    <i class="fas fa-brain"></i>
+                    <h4>TensorFlow</h4>
+                    <p>Deep learning models</p>
+                </div>
+                <div class="tech-item">
+                    <i class="fab fa-docker"></i>
+                    <h4>Kubernetes</h4>
+                    <p>Scalable deployment</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- CTA Section -->
-    <section class="py-20 hero-bg">
-        <div class="max-w-4xl mx-auto px-6 text-center">
-            <h2 class="text-4xl font-bold text-white mb-6">
-                Ready to Start Your Cultural Exchange Journey?
-            </h2>
-            <p class="text-xl text-blue-100 mb-8 leading-relaxed">
-                Join thousands of international students and local residents already building 
-                meaningful connections through WeBond. Your next friendship is just a click away.
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <button class="bg-white text-blue-900 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-all">
-                    Sign Up as Student
-                </button>
-                <button class="border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-blue-900 transition-all">
-                    Join as Local Helper
-                </button>
+    <section class="cta">
+        <div class="section-container">
+            <h2>Join 3,000+ Students Already Thriving</h2>
+            <p>Whether you need help settling in Hong Kong or want to earn money with your skills - start today!</p>
+            <div class="hero-actions" style="justify-content: center;">
+                <a href="app.html" class="btn-modern" style="text-decoration: none;">✨ Create Account</a>
+                <a href="app.html" class="btn-neon" style="text-decoration: none;">🔍 Explore Tasks</a>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-white py-12">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="grid md:grid-cols-4 gap-8">
-                <div>
-                    <div class="flex items-center space-x-2 mb-6">
-                        <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-emerald-500 rounded-lg flex items-center justify-center">
-                            <span class="text-white font-bold text-lg">W</span>
-                        </div>
-                        <span class="text-white font-bold text-xl">WeBond</span>
-                    </div>
-                    <p class="text-gray-400 leading-relaxed">
-                        Bridging communities through AI-powered connections. 
-                        Building a more inclusive Hong Kong, one friendship at a time.
-                    </p>
+    <footer id="about">
+        <div class="footer-content section-container">
+            <div class="footer-section">
+                <div style="margin-bottom: 1rem;">
+                    <span style="font-size: 3rem;">🎓🤝💰</span>
+                    <h3 style="margin-top: 0.5rem;">WEBOND</h3>
                 </div>
-                <div>
-                    <h4 class="font-bold text-lg mb-6">For Students</h4>
-                    <ul class="space-y-3 text-gray-400">
-                        <li><a href="#" class="hover:text-white transition-colors">How It Works</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Safety Guide</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Success Stories</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Support</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="font-bold text-lg mb-6">For Locals</h4>
-                    <ul class="space-y-3 text-gray-400">
-                        <li><a href="#" class="hover:text-white transition-colors">Become a Helper</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Verification Process</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Earnings</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Community Guidelines</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="font-bold text-lg mb-6">Company</h4>
-                    <ul class="space-y-3 text-gray-400">
-                        <li><a href="#" class="hover:text-white transition-colors">About Us</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Terms of Service</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Contact</a></li>
-                    </ul>
-                </div>
+                <p>The premier student platform in Hong Kong. Connecting international and local students for academic support, cultural exchange, and earning opportunities.</p>
             </div>
-            <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-                <p>&copy; 2025 WeBond. All rights reserved. Building bridges, connecting hearts.</p>
+            <div class="footer-section">
+                <h3>Platform</h3>
+                <ul>
+                    <li><a href="app.html">Browse Tasks</a></li>
+                    <li><a href="app.html">Post a Task</a></li>
+                    <li><a href="app.html">Messages</a></li>
+                    <li><a href="#">How It Works</a></li>
+                </ul>
             </div>
+            <div class="footer-section">
+                <h3>Company</h3>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Press Kit</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">PDPO Compliance</a></li>
+                    <li><a href="#">Security</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom section-container">
+            <p>&copy; 2025 WeBond. All rights reserved. Built with ❤️ in Hong Kong.</p>
         </div>
     </footer>
 
-    <script src="main.js"></script>
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Animate elements on scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.feature-card, .step, .tech-item').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
 </body>
 </html>
