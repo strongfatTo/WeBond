@@ -42,21 +42,28 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         lastName,
         role,
         preferredLanguage: preferredLanguage || 'en',
+        // refreshToken will be added after generation
       },
     });
 
     // Generate tokens
     const accessToken = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET || 'default_secret',
-      { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
+      process.env.JWT_SECRET as jwt.Secret,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '1h' } as jwt.SignOptions
     );
 
     const refreshToken = jwt.sign(
       { userId: user.id },
-      process.env.JWT_REFRESH_SECRET || 'default_refresh_secret',
-      { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d' }
+      process.env.JWT_REFRESH_SECRET as jwt.Secret,
+      { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d' } as jwt.SignOptions
     );
+
+    // Update user with refresh token
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { refreshToken },
+    });
 
     logger.info(`User registered: ${user.id}`);
 
@@ -88,6 +95,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
 
+    if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
+      logger.error('JWT secrets are not configured.');
+      throw new AppError('Server configuration error', 500);
+    }
+
     // Find user
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
@@ -114,15 +126,21 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     // Generate tokens
     const accessToken = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET || 'default_secret',
-      { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
+      process.env.JWT_SECRET as jwt.Secret,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '1h' } as jwt.SignOptions
     );
 
     const refreshToken = jwt.sign(
       { userId: user.id },
-      process.env.JWT_REFRESH_SECRET || 'default_refresh_secret',
-      { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d' }
+      process.env.JWT_REFRESH_SECRET as jwt.Secret,
+      { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d' } as jwt.SignOptions
     );
+
+    // Update refresh token in DB
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { refreshToken },
+    });
 
     logger.info(`User logged in: ${user.id}`);
 
@@ -148,34 +166,73 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
 export const refreshToken = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { refreshToken } = req.body;
+    const { refreshToken: oldRefreshToken } = req.body;
 
-    if (!refreshToken) {
+    if (!oldRefreshToken) {
       throw new AppError('Refresh token required', 400);
     }
 
+    if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
+      logger.error('JWT secrets are not configured.');
+      throw new AppError('Server configuration error', 500);
+    }
+
     const payload = jwt.verify(
-      refreshToken,
-      process.env.JWT_REFRESH_SECRET || 'default_refresh_secret'
+      oldRefreshToken,
+      process.env.JWT_REFRESH_SECRET as jwt.Secret
     ) as { userId: string };
 
     const user = await prisma.user.findUnique({
       where: { id: payload.userId },
     });
 
-    if (!user || user.accountStatus !== 'active') {
+    if (!user || user.accountStatus !== 'active' || user.refreshToken !== oldRefreshToken) {
       throw new AppError('Invalid refresh token', 401);
     }
 
     const newAccessToken = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET || 'default_secret',
-      { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
+      process.env.JWT_SECRET as jwt.Secret,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '1h' } as jwt.SignOptions
     );
 
-    res.json({ accessToken: newAccessToken });
+    const newRefreshToken = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_REFRESH_SECRET as jwt.Secret,
+      { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d' } as jwt.SignOptions
+    );
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { refreshToken: newRefreshToken },
+    });
+
+    res.json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
   } catch (error) {
     if (error instanceof AppError) throw error;
+    logger.error('Token refresh error:', error);
     throw new AppError('Token refresh failed', 401);
+  }
+};
+
+export const logout = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userId } = req.body; // Assuming userId is passed in the body for logout
+
+    if (!userId) {
+      throw new AppError('User ID required for logout', 400);
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { refreshToken: null },
+    });
+
+    logger.info(`User logged out: ${userId}`);
+    res.status(200).json({ message: 'Logged out successfully' });
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    logger.error('Logout error:', error);
+    throw new AppError('Logout failed', 500);
   }
 };
