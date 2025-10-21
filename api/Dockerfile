@@ -1,6 +1,11 @@
-FROM node:20-alpine
+FROM node:20
 
 WORKDIR /app
+
+# No need to explicitly install OpenSSL for Prisma on Debian-based image
+
+# Set NODE_ENV for build to ensure devDependencies are installed
+ENV NODE_ENV=development
 
 # Copy package files
 COPY package*.json ./
