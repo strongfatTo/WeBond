@@ -37,7 +37,7 @@ services:
   # API Service
   api:
     build:
-      context: ./api
+      context: ./backend
       dockerfile: Dockerfile
     container_name: webond-api
     ports:
