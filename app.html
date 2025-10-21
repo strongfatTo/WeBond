@@ -9,21 +9,9 @@
     <link rel="stylesheet" href="modern-styles.css">
 </head>
 <body>
-    <!-- Animated Background Icons -->
-    <div class="floating-icons">
-        <div class="floating-icon">🎓</div>
-        <div class="floating-icon">💰</div>
-        <div class="floating-icon">📚</div>
-        <div class="floating-icon">💵</div>
-        <div class="floating-icon">🎯</div>
-        <div class="floating-icon">💳</div>
-        <div class="floating-icon">📖</div>
-        <div class="floating-icon">💸</div>
-        <div class="floating-icon">🏆</div>
-        <div class="floating-icon">🎓</div>
-        <div class="floating-icon">💰</div>
-        <div class="floating-icon">📝</div>
-    </div>
+    <!-- Neon Blur Background -->
+    <div class="neon-background"></div>
+    <div class="neon-overlay"></div>
 
     <!-- Top Navigation -->
     <nav class="top-nav">
@@ -37,7 +25,7 @@
                     <div class="user-avatar" id="userAvatar">U</div>
                     <div>
                         <div id="userName" style="font-weight: 600;">User Name</div>
-                        <div id="userRole" style="font-size: 0.85rem; color: var(--text-light);">Role</div>
+                        <div id="userRole" style="font-size: 0.85rem; color: #4a5568;">Role</div>
                     </div>
                 </div>
             </div>
@@ -90,11 +78,11 @@
                         <div style="margin: 1.5rem 0;">
                             <div style="background: var(--bg-light); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
                                 <strong>🎓 Need Help?</strong>
-                                <p style="margin: 0.5rem 0 0 0; color: var(--text-light);">Post tasks like: visa applications, assignment help, apartment hunting, translation, city tours</p>
+                                <p style="margin: 0.5rem 0 0 0; color: #2c3e50;">Post tasks like: visa applications, assignment help, apartment hunting, translation, city tours</p>
                             </div>
                             <div style="background: var(--bg-light); padding: 1rem; border-radius: 8px;">
                                 <strong>💰 Want to Earn?</strong>
-                                <p style="margin: 0.5rem 0 0 0; color: var(--text-light);">Browse tasks and use your skills to help fellow students while earning money</p>
+                                <p style="margin: 0.5rem 0 0 0; color: #2c3e50;">Browse tasks and use your skills to help fellow students while earning money</p>
                             </div>
                         </div>
                         <button class="btn-modern" onclick="showAuthModal()" style="border: none; cursor: pointer;">
@@ -240,7 +228,7 @@
                     <div class="chat-area hidden" id="activeChatArea">
                         <div class="chat-header">
                             <h3 id="chatTitle">Chat Title</h3>
-                            <p id="chatSubtitle" style="color: var(--text-light); font-size: 0.9rem;">Chatting with...</p>
+                            <p id="chatSubtitle" style="color: #4a5568; font-size: 0.9rem;">Chatting with...</p>
                         </div>
                         <div class="messages" id="messages"></div>
                         <div class="chat-input">
@@ -285,7 +273,7 @@
 
                 <div class="card">
                     <h2><i class="fas fa-credit-card"></i> Payment Methods</h2>
-                    <p style="color: var(--text-light); margin-bottom: 1rem;">Secure payment integration powered by Stripe</p>
+                    <p style="color: #2c3e50; margin-bottom: 1rem;">Secure payment integration powered by Stripe</p>
                     <button class="btn btn-outline">
                         <i class="fas fa-plus"></i> Add Payment Method
                     </button>
@@ -293,7 +281,7 @@
 
                 <div class="card">
                     <h2><i class="fas fa-shield-alt"></i> Escrow Protection</h2>
-                    <p style="color: var(--text-light);">All payments are held in secure escrow until task completion. Your money is safe with WeBond's automated escrow system.</p>
+                    <p style="color: #2c3e50;">All payments are held in secure escrow until task completion. Your money is safe with WeBond's automated escrow system.</p>
                 </div>
             </div>
         </main>
@@ -336,7 +324,7 @@
                 <div class="form-group">
                     <label>Password</label>
                     <input type="password" id="regPassword" required>
-                    <small style="color: var(--text-light);">Min 8 chars, 1 uppercase, 1 lowercase, 1 number</small>
+                    <small style="color: #4a5568;">Min 8 chars, 1 uppercase, 1 lowercase, 1 number</small>
                 </div>
                 <div class="form-group">
                     <label>First Name</label>
