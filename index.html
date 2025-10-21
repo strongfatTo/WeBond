@@ -28,11 +28,16 @@
             box-sizing: border-box;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             color: var(--text-dark);
             line-height: 1.6;
             overflow-x: hidden;
+            min-height: 100vh;
         }
 
         /* Navigation */
@@ -66,7 +71,7 @@
         }
         
         .logo img {
-            height: 80px;
+            height: 70px;
             width: auto;
         }
 
@@ -197,12 +202,11 @@
             max-width: 1200px;
             margin: 0 auto;
             position: relative;
-            z-index: 10;
-        }
-        
-        .section-container {
-            position: relative;
-            z-index: 10;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
         }
 
         .hero-content {
@@ -263,10 +267,49 @@
             opacity: 0.9;
         }
 
+        .hero-video {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .hero-video iframe,
+        .hero-video video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+        }
+
+        .video-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.2rem;
+        }
+
+        .video-placeholder i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.6;
+        }
+
         /* Features Section */
         .features {
             padding: 6rem 2rem;
-            background: var(--bg-light);
+            background: transparent;
+            position: relative;
+            z-index: 10;
         }
 
         .section-container {
@@ -379,6 +422,8 @@
         .how-it-works {
             padding: 6rem 2rem;
             background: transparent;
+            position: relative;
+            z-index: 10;
         }
 
         .steps {
@@ -462,6 +507,8 @@
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
             text-align: center;
+            position: relative;
+            z-index: 10;
         }
 
         .cta h2 {
@@ -480,6 +527,8 @@
             background: var(--text-dark);
             color: white;
             padding: 3rem 2rem 1rem;
+            position: relative;
+            z-index: 10;
         }
 
         .footer-content {
@@ -527,6 +576,11 @@
                 font-size: 2.5rem;
             }
 
+            .hero-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
             .nav-links {
                 display: none;
             }
@@ -534,6 +588,10 @@
             .stats {
                 flex-direction: column;
                 gap: 1.5rem;
+            }
+            
+            .logo img {
+                height: 55px !important;
             }
         }
 
@@ -563,8 +621,7 @@
     <nav>
         <div class="nav-container">
             <div class="logo">
-                <span style="font-size: 2rem;"></span>
-                <span style="font-weight: 800; color: #2c3e50;">WEBOND</span>
+                <img src="assets/webond-logo.png" alt="WeBond Logo" style="height: 70px; width: auto;">
             </div>
             <ul class="nav-links">
                 <li><a href="#features">Features</a></li>
@@ -584,7 +641,8 @@
         <div class="hero-container">
             <div class="hero-content animate">
                 <h1 class="gradient-text" style="-webkit-text-fill-color: white;">Connect. Help. Earn. Succeed Together.</h1>
-                <p style="font-size: 1.3rem;">The premier platform for international students in Hong Kong. Get academic help, navigate city life, and earn money by assisting fellow students. Built by students, for students. 🔥</p>
+                <p style="font-size: 1.3rem; font-weight: 600; letter-spacing: 1px; margin-bottom: 1rem;">TOGETHER, WEBOND HONG KONG</p>
+                <p style="font-size: 1.1rem;">The premier platform for international students in Hong Kong. Get academic help, navigate city life, and earn money by assisting fellow students. Built by students, for students. 🔥</p>
                 <div class="hero-actions">
                     <a href="app.html" class="btn-modern" style="text-decoration: none;">🚀 Start Using WeBond</a>
                     <a href="app.html" class="btn-neon" style="text-decoration: none;">View Demo</a>
@@ -602,6 +660,22 @@
                         <span class="stat-number">HKD 2M+</span>
                         <span class="stat-label">Earned by Students</span>
                     </div>
+                </div>
+            </div>
+            <!-- Video Frame -->
+            <div class="hero-video">
+                <!-- Replace the src with your actual video URL (YouTube, Vimeo, or video file) -->
+                <iframe 
+                    src="" 
+                    title="WeBond Demo Video" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+                </iframe>
+                <div class="video-placeholder">
+                    <i class="fas fa-play-circle"></i>
+                    <p>Add your video URL here</p>
+                    <small style="opacity: 0.7;">YouTube, Vimeo, or direct video link</small>
                 </div>
             </div>
         </div>
@@ -681,15 +755,14 @@
         </div>
     </section>
 
-    <!-- Tech Stack -->
     <!-- CTA Section -->
     <section class="cta">
         <div class="section-container">
             <h2>Join 3,000+ Students Already Thriving</h2>
-            <p>Whether you need help settling in Hong Kong or want to earn money with your skills - start today!</p>
+            <p style="font-size: 1.2rem; margin-bottom: 2.5rem;">Whether you need help settling in Hong Kong or want to earn money with your skills - start today!</p>
             <div class="hero-actions" style="justify-content: center;">
                 <a href="app.html" class="btn-modern" style="text-decoration: none;">✨ Create Account</a>
-                <a href="app.html" class="btn-neon" style="text-decoration: none;">🔍 Explore Tasks</a>
+                <a href="app.html" class="btn-neon" style="text-decoration: none;">🔍 EXPLORE TASKS</a>
             </div>
         </div>
     </section>
@@ -699,7 +772,6 @@
         <div class="footer-content section-container">
             <div class="footer-section">
                 <div style="margin-bottom: 1rem;">
-                    <span style="font-size: 3rem;">🎓🤝💰</span>
                     <h3 style="margin-top: 0.5rem;">WEBOND</h3>
                 </div>
                 <p>The premier student platform in Hong Kong. Connecting international and local students for academic support, cultural exchange, and earning opportunities.</p>
