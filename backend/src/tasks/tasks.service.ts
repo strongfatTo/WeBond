@@ -1,16 +1,8 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
 import { CreateTaskDto, UpdateTaskDto } from './dto';
 
 @Injectable()
 export class TasksService {
-  constructor(
-    private httpService: HttpService,
-    private configService: ConfigService,
-  ) {}
-
   async createTask(raiserId: string, dto: CreateTaskDto) {
     // Mock task creation
     const task = {
@@ -47,21 +39,6 @@ export class TasksService {
         raiser: {
           id: 'user_1',
           full_name: 'John Doe',
-          profile_picture: null,
-        },
-      },
-      {
-        id: 'task_2',
-        title: 'Language exchange',
-        description: 'Looking for someone to practice English conversation',
-        category: 'educational',
-        location: 'Central, Hong Kong',
-        reward_amount: 150,
-        status: 'open',
-        created_at: new Date().toISOString(),
-        raiser: {
-          id: 'user_2',
-          full_name: 'Jane Smith',
           profile_picture: null,
         },
       },
