@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000';
+const API_URL = 'http://localhost:3000/api/v1';
 let currentUser = null;
 let currentToken = null;
 let currentTask = null;
@@ -87,7 +87,7 @@ async function login(e) {
     };
 
     try {
-        const response = await fetch(`${API_URL}/api/auth/login`, {
+        const response = await fetch(`${API_URL}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -122,7 +122,7 @@ async function register(e) {
     };
 
     try {
-        const response = await fetch(`${API_URL}/api/auth/register`, {
+        const response = await fetch(`${API_URL}/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -160,7 +160,7 @@ async function loadDashboardData() {
     if (!currentToken) return;
     
     try {
-        const response = await fetch(`${API_URL}/api/tasks`, {
+        const response = await fetch(`${API_URL}/tasks`, {
             headers: { 'Authorization': `Bearer ${currentToken}` }
         });
         const result = await response.json();
@@ -194,7 +194,7 @@ async function loadTasks() {
     const status = document.getElementById('filterStatus').value;
     const category = document.getElementById('filterCategory').value;
     
-    let url = `${API_URL}/api/tasks?status=${status}`;
+    let url = `${API_URL}/tasks?status=${status}`;
     if (category) url += `&category=${category}`;
 
     try {
@@ -238,7 +238,7 @@ async function acceptTask(taskId, event) {
     }
 
     try {
-        const response = await fetch(`${API_URL}/api/tasks/${taskId}/accept`, {
+        const response = await fetch(`${API_URL}/tasks/${taskId}/accept`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${currentToken}` }
         });
@@ -277,7 +277,7 @@ async function createTask(e) {
     };
 
     try {
-        const response = await fetch(`${API_URL}/api/tasks`, {
+        const response = await fetch(`${API_URL}/tasks`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -292,7 +292,7 @@ async function createTask(e) {
             showStatus('createStatus', `✅ Task created! ID: ${result.id.substring(0, 8)}...`, 'success');
             document.getElementById('createTaskForm').reset();
             
-            await fetch(`${API_URL}/api/tasks/${result.id}/publish`, {
+            await fetch(`${API_URL}/tasks/${taskId}/publish`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${currentToken}` }
             });
@@ -312,7 +312,7 @@ async function loadChatList() {
     if (!currentToken) return;
 
     try {
-        const response = await fetch(`${API_URL}/api/tasks?status=in_progress`, {
+        const response = await fetch(`${API_URL}/tasks?status=in_progress`, {
             headers: { 'Authorization': `Bearer ${currentToken}` }
         });
         const result = await response.json();
@@ -346,7 +346,7 @@ async function selectChat(taskId) {
     if (messageInterval) clearInterval(messageInterval);
 
     try {
-        const response = await fetch(`${API_URL}/api/tasks/${taskId}`);
+        const response = await fetch(`${API_URL}/tasks/${taskId}`);
         const task = await response.json();
         currentTask = task;
 
@@ -368,7 +368,7 @@ async function selectChat(taskId) {
 
 async function loadMessages(taskId) {
     try {
-        const response = await fetch(`${API_URL}/api/messages/${taskId}`, {
+        const response = await fetch(`${API_URL}/messages/${taskId}`, {
             headers: { 'Authorization': `Bearer ${currentToken}` }
         });
 
@@ -414,7 +414,7 @@ async function sendMessage() {
     if (!content) return;
 
     try {
-        const response = await fetch(`${API_URL}/api/messages/${currentTask.id}`, {
+        const response = await fetch(`${API_URL}/messages/${currentTask.id}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

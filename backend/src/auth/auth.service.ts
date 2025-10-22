@@ -16,6 +16,9 @@ export class AuthService {
         id: 'user_' + Date.now(),
         email: registerDto.email,
         password: hashedPassword,
+        firstName: registerDto.firstName,
+        lastName: registerDto.lastName,
+        role: registerDto.role,
         createdAt: new Date(),
       };
 
@@ -31,6 +34,9 @@ export class AuthService {
         user: {
           id: mockUser.id,
           email: mockUser.email,
+          firstName: mockUser.firstName,
+          lastName: mockUser.lastName,
+          role: mockUser.role,
         },
         token,
       };
@@ -49,6 +55,9 @@ export class AuthService {
       const mockUser = {
         id: 'user_' + Date.now(),
         email: loginDto.email,
+        firstName: 'Test',
+        lastName: 'User',
+        role: 'raiser',
       };
 
       // Generate JWT token
@@ -63,6 +72,9 @@ export class AuthService {
         user: {
           id: mockUser.id,
           email: mockUser.email,
+          firstName: mockUser.firstName,
+          lastName: mockUser.lastName,
+          role: mockUser.role,
         },
         token,
       };
