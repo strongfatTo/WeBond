@@ -1,23 +1,26 @@
-# Use an official Node.js runtime as a parent image
-FROM node:20-alpine
+# Stage 1: Builder
+FROM node:20 as builder
 
-# Set the working directory in the container
 WORKDIR /app
 
-# Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
 
-# Install app dependencies
 RUN npm install
+RUN apt-get update && apt-get install -y python3 make g++ && npm rebuild bcrypt --build-from-source
 
-# Copy the rest of the application code to the working directory
 COPY . .
 
-# Build the TypeScript application
 RUN npm run build
 
-# Expose the port the app runs on
+# Stage 2: Production
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY --from=builder package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+
 EXPOSE 3000
 
-# Run the application
-CMD ["npm", "run", "start:prod"]
+CMD ["node", "dist/main"]
