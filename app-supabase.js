@@ -2,47 +2,52 @@
 const SUPABASE_URL = 'https://mqghigpyrjpjchbstdhq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xZ2hpZ3B5cmpwamNoYnN0ZGhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0MjI0MzksImV4cCI6MjA3NTk5ODQzOX0.H1EQwi3ydfY3vQFHohqxmlnWAvnQKJjHe0koYLALCQM';
 
-// Initialize Supabase client (with error handling)
-let supabaseClient;
-try {
-    if (typeof supabase !== 'undefined') {
-        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } else {
-        console.error('Supabase library not loaded');
-    }
-} catch (error) {
-    console.error('Error initializing Supabase:', error);
-}
+// Initialize Supabase client (will be set when page loads)
+let supabaseClient = null;
 
 let currentUser = null;
 let currentTask = null;
 let messageInterval = null;
 
+// Initialize Supabase client
+function initializeSupabase() {
+    try {
+        if (typeof supabase !== 'undefined') {
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('Supabase client initialized successfully');
+            return true;
+        } else {
+            console.error('Supabase library not loaded');
+            return false;
+        }
+    } catch (error) {
+        console.error('Error initializing Supabase:', error);
+        return false;
+    }
+}
+
 // Check if Supabase is ready
 function isSupabaseReady() {
-    return typeof supabaseClient !== 'undefined' && supabaseClient !== null;
+    return supabaseClient !== null;
 }
 
 // Initialize
 window.onload = function() {
-    // Wait a bit for Supabase to load
-    setTimeout(() => {
-        if (isSupabaseReady()) {
-            loadAuthState();
-            updateUI();
-        } else {
-            console.error('Supabase not ready, retrying...');
-            // Retry after a short delay
-            setTimeout(() => {
-                if (isSupabaseReady()) {
-                    loadAuthState();
-                    updateUI();
-                } else {
-                    console.error('Supabase still not ready');
-                }
-            }, 1000);
-        }
-    }, 100);
+    // Try to initialize Supabase
+    if (initializeSupabase()) {
+        loadAuthState();
+        updateUI();
+    } else {
+        // Retry after a short delay
+        setTimeout(() => {
+            if (initializeSupabase()) {
+                loadAuthState();
+                updateUI();
+            } else {
+                console.error('Failed to initialize Supabase after retry');
+            }
+        }, 1000);
+    }
 };
 
 function loadAuthState() {
