@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase CDN Test</title>
+</head>
+<body>
+    <h1>Supabase CDN Test</h1>
+    <div id="status">Testing...</div>
+    
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        console.log('Testing Supabase CDN...');
+        
+        setTimeout(() => {
+            if (typeof supabase !== 'undefined') {
+                document.getElementById('status').innerHTML = '✅ Supabase loaded successfully!';
+                console.log('✅ Supabase is available:', supabase);
+            } else {
+                document.getElementById('status').innerHTML = '❌ Supabase failed to load';
+                console.log('❌ Supabase is not available');
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
