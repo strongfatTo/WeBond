@@ -374,52 +374,82 @@ async function loadDashboardData() {
 async function loadTasks() {
     if (!isSupabaseReady()) {
         console.error('Supabase not ready for loading tasks');
+        const container = document.getElementById('tasksList');
+        if (container) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Database not ready. Please refresh the page.</p></div>';
+        }
         return;
     }
     
-    const status = document.getElementById('filterStatus').value;
-    const category = document.getElementById('filterCategory').value;
+    const status = document.getElementById('filterStatus')?.value || null;
+    const category = document.getElementById('filterCategory')?.value || null;
+    
+    console.log('Loading tasks with filters:', { status, category });
     
     try {
         const { data, error } = await supabaseClient.rpc('get_tasks', {
-            p_status: status || null,
-            p_category: category || null,
+            p_status: status,
+            p_category: category,
             p_location: null
         });
 
         if (error) {
             console.error('Error loading tasks:', error);
+            const container = document.getElementById('tasksList');
+            if (container) {
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Error loading tasks: ${error.message}</p></div>`;
+            }
             return;
         }
 
+        console.log('Tasks loaded:', data);
         displayTasks(data.data || []);
     } catch (error) {
-        console.error('Error loading tasks:', error);
+        console.error('Exception loading tasks:', error);
+        const container = document.getElementById('tasksList');
+        if (container) {
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Error: ${error.message}</p></div>`;
+        }
     }
 }
 
 function displayTasks(tasks) {
     const container = document.getElementById('tasksList');
     
-    if (tasks.length === 0) {
-        container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>No tasks found</p></div>';
+    if (!container) {
+        console.error('tasksList container not found');
+        return;
+    }
+    
+    console.log(`Displaying ${tasks.length} tasks`);
+    
+    if (!tasks || tasks.length === 0) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>No tasks found. Create your first task!</p></div>';
         return;
     }
 
-    container.innerHTML = tasks.map(task => `
-        <div class="task-card" onclick='viewTask(${JSON.stringify(task)})'>
-            <h3>${task.title}</h3>
-            <p>${task.description.substring(0, 120)}...</p>
-            <div class="task-meta">
-                <span class="badge ${task.status}">${task.status.replace('_', ' ').toUpperCase()}</span>
-                <span>💰 HKD ${task.reward_amount}</span>
-                <span>📍 ${task.location}</span>
-            </div>
-            ${task.status === 'active' && currentUser && currentUser.role !== 'raiser' ? 
-                `<button class="btn btn-primary" style="margin-top: 1rem; width: 100%;" onclick="acceptTask('${task.id}', event)">Accept Task</button>` : 
-                ''}
-        </div>
-    `).join('');
+    try {
+        container.innerHTML = tasks.map(task => {
+            const taskJson = JSON.stringify(task).replace(/'/g, '&apos;');
+            return `
+                <div class="task-card" onclick='viewTask(${taskJson})'>
+                    <h3>${task.title || 'Untitled Task'}</h3>
+                    <p>${(task.description || '').substring(0, 120)}${task.description && task.description.length > 120 ? '...' : ''}</p>
+                    <div class="task-meta">
+                        <span class="badge ${task.status || 'active'}">${(task.status || 'active').replace('_', ' ').toUpperCase()}</span>
+                        <span>💰 HKD ${task.reward_amount || 0}</span>
+                        <span>📍 ${task.location || 'Not specified'}</span>
+                    </div>
+                    ${task.status === 'active' && currentUser && currentUser.role !== 'raiser' ? 
+                        `<button class="btn btn-primary" style="margin-top: 1rem; width: 100%;" onclick="acceptTask('${task.id}', event)">Accept Task</button>` : 
+                        ''}
+                </div>
+            `;
+        }).join('');
+    } catch (error) {
+        console.error('Error displaying tasks:', error);
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Error displaying tasks</p></div>';
+    }
 }
 
 async function acceptTask(taskId, event) {
