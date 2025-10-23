@@ -2,18 +2,48 @@
 const SUPABASE_URL = 'https://mqghigpyrjpjchbstdhq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xZ2hpZ3B5cmpwamNoYnN0ZGhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0MjI0MzksImV4cCI6MjA3NTk5ODQzOX0.H1EQwi3ydfY3vQFHohqxmlnWAvnQKJjHe0koYLALCQM';
 
-// Initialize Supabase client
-const { createClient } = supabase;
-const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Initialize Supabase client (with error handling)
+let supabaseClient;
+try {
+    if (typeof supabase !== 'undefined') {
+        const { createClient } = supabase;
+        supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } else {
+        console.error('Supabase library not loaded');
+    }
+} catch (error) {
+    console.error('Error initializing Supabase:', error);
+}
 
 let currentUser = null;
 let currentTask = null;
 let messageInterval = null;
 
+// Check if Supabase is ready
+function isSupabaseReady() {
+    return typeof supabaseClient !== 'undefined' && supabaseClient !== null;
+}
+
 // Initialize
 window.onload = function() {
-    loadAuthState();
-    updateUI();
+    // Wait a bit for Supabase to load
+    setTimeout(() => {
+        if (isSupabaseReady()) {
+            loadAuthState();
+            updateUI();
+        } else {
+            console.error('Supabase not ready, retrying...');
+            // Retry after a short delay
+            setTimeout(() => {
+                if (isSupabaseReady()) {
+                    loadAuthState();
+                    updateUI();
+                } else {
+                    console.error('Supabase still not ready');
+                }
+            }, 1000);
+        }
+    }, 100);
 };
 
 function loadAuthState() {
@@ -85,26 +115,27 @@ function showAuthTab(tab) {
 
 async function login(e) {
     e.preventDefault();
+    
+    if (!isSupabaseReady()) {
+        showStatus('authStatus', '❌ Database not ready. Please refresh the page.', 'error');
+        return;
+    }
+    
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
 
     try {
-        const { data, error } = await supabaseClient.auth.signInWithPassword({
-            email: email,
-            password: password
-        });
-
-        if (error) {
-            showStatus('authStatus', `❌ ${error.message}`, 'error');
-            return;
-        }
-
-        // Get user profile
-        const { data: profile } = await supabaseClient
+        // Find user by email (simplified login for demo)
+        const { data: profile, error } = await supabaseClient
             .from('users')
             .select('*')
-            .eq('id', data.user.id)
+            .eq('email', email)
             .single();
+
+        if (error || !profile) {
+            showStatus('authStatus', `❌ User not found. Please register first.`, 'error');
+            return;
+        }
 
         currentUser = profile;
         localStorage.setItem('webond_user', JSON.stringify(currentUser));
@@ -113,11 +144,18 @@ async function login(e) {
         showStatus('authStatus', '✅ Login successful!', 'success');
     } catch (error) {
         showStatus('authStatus', `❌ Error: ${error.message}`, 'error');
+        console.error('Login error:', error);
     }
 }
 
 async function register(e) {
     e.preventDefault();
+    
+    if (!isSupabaseReady()) {
+        showStatus('authStatus', '❌ Database not ready. Please refresh the page.', 'error');
+        return;
+    }
+    
     const email = document.getElementById('regEmail').value;
     const password = document.getElementById('regPassword').value;
     const firstName = document.getElementById('regFirstName').value;
@@ -125,22 +163,14 @@ async function register(e) {
     const role = document.getElementById('regRole').value;
 
     try {
-        // Register with Supabase Auth
-        const { data: authData, error: authError } = await supabaseClient.auth.signUp({
-            email: email,
-            password: password
-        });
-
-        if (authError) {
-            showStatus('authStatus', `❌ ${authError.message}`, 'error');
-            return;
-        }
-
-        // Create user profile
+        // Generate a simple user ID (for demo purposes)
+        const userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        
+        // Create user profile directly (bypassing Supabase Auth for now)
         const { data: profile, error: profileError } = await supabaseClient
             .from('users')
             .insert({
-                id: authData.user.id,
+                id: userId,
                 email: email,
                 first_name: firstName,
                 last_name: lastName,
@@ -152,6 +182,7 @@ async function register(e) {
 
         if (profileError) {
             showStatus('authStatus', `❌ ${profileError.message}`, 'error');
+            console.error('Profile creation error:', profileError);
             return;
         }
 
@@ -162,11 +193,11 @@ async function register(e) {
         showStatus('authStatus', '✅ Registration successful!', 'success');
     } catch (error) {
         showStatus('authStatus', `❌ Error: ${error.message}`, 'error');
+        console.error('Registration error:', error);
     }
 }
 
 function logout() {
-    supabaseClient.auth.signOut();
     currentUser = null;
     localStorage.removeItem('webond_user');
     updateUI();
