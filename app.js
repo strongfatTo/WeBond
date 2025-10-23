@@ -94,10 +94,40 @@ window.onload = async function() {
     }
 };
 
-function loadAuthState() {
-    const savedUser = localStorage.getItem('webond_user');
-    if (savedUser) {
-        currentUser = JSON.parse(savedUser);
+async function loadAuthState() {
+    const { data: { session }, error } = await supabaseClient.auth.getSession();
+
+    if (error) {
+        console.error('Error getting Supabase session:', error);
+        return;
+    }
+
+    if (session) {
+        // If there's an active session, fetch the user profile from our 'users' table
+        const { data: profile, error: profileError } = await supabaseClient
+            .from('users')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+        if (profileError || !profile) {
+            console.error('Failed to load user profile from session:', profileError);
+            currentUser = null;
+            localStorage.removeItem('webond_user'); // Clear potentially stale local storage
+            return;
+        }
+        currentUser = profile;
+        localStorage.setItem('webond_user', JSON.stringify(currentUser)); // Keep local storage updated
+    } else {
+        // If no active session, check local storage for a previously saved user (might be stale)
+        const savedUser = localStorage.getItem('webond_user');
+        if (savedUser) {
+            currentUser = JSON.parse(savedUser);
+            // Optionally, try to re-authenticate if a user was saved but no session is active
+            // For simplicity, we'll just clear it if no session is found.
+            localStorage.removeItem('webond_user');
+            currentUser = null;
+        }
     }
 }
 
@@ -173,15 +203,27 @@ async function login(e) {
     const password = document.getElementById('loginPassword').value;
 
     try {
-        // Find user by email (simplified login for demo)
-        const { data: profile, error } = await supabaseClient
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password,
+        });
+
+        if (error) {
+            showStatus('authStatus', `❌ ${error.message}`, 'error');
+            console.error('Supabase login error:', error);
+            return;
+        }
+
+        // Fetch user profile from 'users' table after successful Supabase auth
+        const { data: profile, error: profileError } = await supabaseClient
             .from('users')
             .select('*')
-            .eq('email', email)
+            .eq('id', data.user.id)
             .single();
 
-        if (error || !profile) {
-            showStatus('authStatus', `❌ User not found. Please register first.`, 'error');
+        if (profileError || !profile) {
+            showStatus('authStatus', `❌ Failed to load user profile: ${profileError?.message || 'Profile not found'}`, 'error');
+            console.error('Profile load error:', profileError);
             return;
         }
 
@@ -211,18 +253,30 @@ async function register(e) {
     const role = document.getElementById('regRole').value;
 
     try {
-        // Generate a proper UUID v4
-        const userId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-            const r = Math.random() * 16 | 0;
-            const v = c == 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
+        const { data, error } = await supabaseClient.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                data: {
+                    first_name: firstName,
+                    last_name: lastName,
+                    role: role,
+                }
+            }
         });
-        
-        // Create user profile directly (bypassing Supabase Auth for now)
+
+        if (error) {
+            showStatus('authStatus', `❌ ${error.message}`, 'error');
+            console.error('Supabase registration error:', error);
+            return;
+        }
+
+        // Supabase signUp automatically logs in the user and sets the session.
+        // We still need to create the user profile in our 'users' table.
         const { data: profile, error: profileError } = await supabaseClient
             .from('users')
             .insert({
-                id: userId,
+                id: data.user.id, // Use the ID from Supabase Auth
                 email: email,
                 first_name: firstName,
                 last_name: lastName,
@@ -233,7 +287,9 @@ async function register(e) {
             .single();
 
         if (profileError) {
-            showStatus('authStatus', `❌ ${profileError.message}`, 'error');
+            // If profile creation fails, consider logging out the user from Supabase Auth
+            await supabaseClient.auth.signOut();
+            showStatus('authStatus', `❌ Failed to create user profile: ${profileError.message}`, 'error');
             console.error('Profile creation error:', profileError);
             return;
         }
