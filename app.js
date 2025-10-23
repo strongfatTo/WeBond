@@ -293,6 +293,7 @@ async function register(e) {
             console.error('Profile creation error:', profileError);
             return;
         }
+        console.log('User profile created successfully:', profile);
 
         currentUser = profile;
         localStorage.setItem('webond_user', JSON.stringify(currentUser));

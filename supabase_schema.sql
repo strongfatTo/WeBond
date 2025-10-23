@@ -257,6 +257,11 @@ CREATE POLICY "Users can update own profile"
     ON users FOR UPDATE
     USING (auth.uid() = id);
 
+-- Users can create their own profile
+CREATE POLICY "Users can create own profile"
+    ON users FOR INSERT
+    WITH CHECK (auth.uid() = id);
+
 -- Tasks are viewable by everyone
 CREATE POLICY "Tasks are viewable by everyone"
     ON tasks FOR SELECT
