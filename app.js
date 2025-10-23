@@ -2,18 +2,74 @@
 const SUPABASE_URL = 'https://mqghigpyrjpjchbstdhq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xZ2hpZ3B5cmpwamNoYnN0ZGhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0MjI0MzksImV4cCI6MjA3NTk5ODQzOX0.H1EQwi3ydfY3vQFHohqxmlnWAvnQKJjHe0koYLALCQM';
 
-// Initialize Supabase client
-const { createClient } = supabase;
-const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Initialize Supabase client (will be set when page loads)
+let supabaseClient = null;
+
+// Try to initialize immediately if Supabase is already available
+if (typeof supabase !== 'undefined') {
+    try {
+        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('Supabase client initialized immediately');
+    } catch (error) {
+        console.error('Error initializing Supabase immediately:', error);
+    }
+}
 
 let currentUser = null;
 let currentTask = null;
 let messageInterval = null;
 
+// Initialize Supabase client
+function initializeSupabase() {
+    try {
+        if (typeof supabase !== 'undefined') {
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('Supabase client initialized successfully');
+            return true;
+        } else {
+            console.error('Supabase library not loaded');
+            return false;
+        }
+    } catch (error) {
+        console.error('Error initializing Supabase:', error);
+        return false;
+    }
+}
+
+// Check if Supabase is ready
+function isSupabaseReady() {
+    return supabaseClient !== null;
+}
+
+// Wait for Supabase script to load
+function waitForSupabase() {
+    return new Promise((resolve) => {
+        const checkSupabase = () => {
+            if (typeof supabase !== 'undefined') {
+                resolve(true);
+            } else {
+                setTimeout(checkSupabase, 100);
+            }
+        };
+        checkSupabase();
+    });
+}
+
 // Initialize
-window.onload = function() {
-    loadAuthState();
-    updateUI();
+window.onload = async function() {
+    console.log('Page loaded, waiting for Supabase...');
+    
+    // Wait for Supabase to be available
+    await waitForSupabase();
+    console.log('Supabase library found, initializing...');
+    
+    // Try to initialize Supabase
+    if (initializeSupabase()) {
+        loadAuthState();
+        updateUI();
+    } else {
+        console.error('Failed to initialize Supabase');
+    }
 };
 
 function loadAuthState() {
