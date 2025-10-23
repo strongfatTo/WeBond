@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: webond-backend
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run start:prod
+    envVars:
+      - key: SUPABASE_URL
+        value: https://mqghigpyjpjjchbstdhq.supabase.co
+      - key: SUPABASE_ANON_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xZ2hpZ3B5cmpwamNoYnN0ZGhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0MjI0MzksImV4cCI6MjA3NTk5ODQzOX0.H1EQwi3ydfY3vQFHohqxmlnWAvnQKJjHe0koYLALCQM
+      - key: JWT_SECRET
+        value: 8r+3JxPdaZo+lcJhB9OirWMh5He9W6V264gl7bqQ97fUwa1bkAV4aEDMy/bTXX3Rm/fLp01+SFMTSt+2sXHa0A==
+      - key: PORT
+        value: 3000
