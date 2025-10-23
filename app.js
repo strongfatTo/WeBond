@@ -95,6 +95,11 @@ window.onload = async function() {
 };
 
 async function loadAuthState() {
+    if (!isSupabaseReady()) {
+        console.error('Supabase not ready in loadAuthState');
+        return;
+    }
+
     const { data: { session }, error } = await supabaseClient.auth.getSession();
 
     if (error) {
@@ -104,33 +109,43 @@ async function loadAuthState() {
 
     if (session) {
         // If there's an active session, fetch the user profile from our 'users' table
-        const { data: profile, error: profileError } = await supabaseClient
-            .from('users')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
+        try {
+            const { data: profile, error: profileError } = await supabaseClient
+                .from('users')
+                .select('*')
+                .eq('id', session.user.id)
+                .maybeSingle(); // Use maybeSingle() instead of single() to handle no results
 
-        if (profileError || !profile) {
-            console.error('Failed to load user profile from session:', profileError);
+            if (profileError) {
+                console.error('Failed to load user profile from session:', profileError);
+                currentUser = null;
+                localStorage.removeItem('webond_user');
+                return;
+            }
+
+            if (!profile) {
+                // Profile doesn't exist - this can happen if registration failed partway
+                console.warn('User authenticated but no profile exists. Logging out...');
+                await supabaseClient.auth.signOut();
+                currentUser = null;
+                localStorage.removeItem('webond_user');
+                alert('Your account setup is incomplete. Please register again.');
+                return;
+            }
+
+            currentUser = profile;
+            localStorage.setItem('webond_user', JSON.stringify(currentUser));
+        } catch (err) {
+            console.error('Exception loading user profile:', err);
             currentUser = null;
-            localStorage.removeItem('webond_user'); // Clear potentially stale local storage
-            return;
-        }
-        currentUser = profile;
-        localStorage.setItem('webond_user', JSON.stringify(currentUser)); // Keep local storage updated
-    } else {
-        // If no active session, check local storage for a previously saved user (might be stale)
-        const savedUser = localStorage.getItem('webond_user');
-        if (savedUser) {
-            currentUser = JSON.parse(savedUser);
-            // Optionally, try to re-authenticate if a user was saved but no session is active
-            // For simplicity, we'll just clear it if no session is found.
             localStorage.removeItem('webond_user');
-            currentUser = null;
         }
+    } else {
+        // If no active session, clear any stale data
+        currentUser = null;
+        localStorage.removeItem('webond_user');
     }
 }
-
 function updateUI() {
     if (currentUser) {
         document.getElementById('authButton').classList.add('hidden');
