@@ -178,7 +178,9 @@ async function loadDashboardData() {
     if (!currentUser) return;
     
     try {
-        const { data, error } = await supabaseClient.rpc('get_my_tasks');
+        const { data, error } = await supabaseClient.rpc('get_my_tasks', {
+            p_user_id: currentUser.id
+        });
         
         if (error) {
             console.error('Error loading dashboard:', error);
@@ -261,7 +263,8 @@ async function acceptTask(taskId, event) {
 
     try {
         const { data, error } = await supabaseClient.rpc('accept_task', {
-            p_task_id: taskId
+            p_task_id: taskId,
+            p_solver_id: currentUser.id
         });
 
         if (error) {
@@ -316,7 +319,8 @@ async function createTask(e) {
             p_category: category,
             p_location: location,
             p_reward_amount: rewardAmount,
-            p_deadline: null
+            p_deadline: null,
+            p_raiser_id: currentUser.id
         });
 
         if (error) {
@@ -342,7 +346,9 @@ async function loadChatList() {
     if (!currentUser) return;
 
     try {
-        const { data, error } = await supabaseClient.rpc('get_my_tasks');
+        const { data, error } = await supabaseClient.rpc('get_my_tasks', {
+            p_user_id: currentUser.id
+        });
         
         if (error) {
             console.error('Error loading chats:', error);
