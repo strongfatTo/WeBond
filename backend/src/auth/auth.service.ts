@@ -1,30 +1,51 @@
 import { Injectable } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { SupabaseService } from '../supabase/supabase.service';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class AuthService {
+  constructor(private supabaseService: SupabaseService) {}
   async register(registerDto: RegisterDto): Promise<any> {
     try {
-      // For now, let's use a simple approach without Supabase auth
+      const supabase = this.supabaseService.getClient();
+      
+      // Check if user already exists
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', registerDto.email)
+        .single();
+
+      if (existingUser) {
+        throw new Error('User with this email already exists');
+      }
+
       const hashedPassword = await bcrypt.hash(registerDto.password, 10);
       
-      // Create a mock user
-      const mockUser = {
-        id: 'user_' + Date.now(),
-        email: registerDto.email,
-        password: hashedPassword,
-        firstName: registerDto.firstName,
-        lastName: registerDto.lastName,
-        role: registerDto.role,
-        createdAt: new Date(),
-      };
+      // Create user in database
+      const { data: user, error } = await supabase
+        .from('users')
+        .insert({
+          email: registerDto.email,
+          password_hash: hashedPassword,
+          first_name: registerDto.firstName,
+          last_name: registerDto.lastName,
+          role: registerDto.role,
+          created_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Registration failed: ${error.message}`);
+      }
 
       // Generate JWT token
       const token = jwt.sign(
-        { sub: mockUser.id, email: mockUser.email },
+        { sub: user.id, email: user.email },
         process.env.JWT_SECRET || 'fallback-secret',
         { expiresIn: '24h' }
       );
@@ -32,11 +53,11 @@ export class AuthService {
       return {
         message: 'User registered successfully',
         user: {
-          id: mockUser.id,
-          email: mockUser.email,
-          firstName: mockUser.firstName,
-          lastName: mockUser.lastName,
-          role: mockUser.role,
+          id: user.id,
+          email: user.email,
+          firstName: user.first_name,
+          lastName: user.last_name,
+          role: user.role,
         },
         token,
       };
@@ -48,21 +69,34 @@ export class AuthService {
 
   async login(loginDto: LoginDto): Promise<any> {
     try {
-      // For now, let's use a simple approach without Supabase auth
-      // In a real app, you'd verify the password against the database
+      const supabase = this.supabaseService.getClient();
       
-      // Create a mock user
-      const mockUser = {
-        id: 'user_' + Date.now(),
-        email: loginDto.email,
-        firstName: 'Test',
-        lastName: 'User',
-        role: 'raiser',
-      };
+      // Look up user by email
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', loginDto.email)
+        .single();
+
+      if (error || !user) {
+        throw new Error('Invalid email or password');
+      }
+
+      // Verify password
+      const isPasswordValid = await bcrypt.compare(loginDto.password, user.password_hash);
+      if (!isPasswordValid) {
+        throw new Error('Invalid email or password');
+      }
+
+      // Update last login time
+      await supabase
+        .from('users')
+        .update({ last_login_at: new Date().toISOString() })
+        .eq('id', user.id);
 
       // Generate JWT token
       const token = jwt.sign(
-        { sub: mockUser.id, email: mockUser.email },
+        { sub: user.id, email: user.email },
         process.env.JWT_SECRET || 'fallback-secret',
         { expiresIn: '24h' }
       );
@@ -70,11 +104,11 @@ export class AuthService {
       return {
         message: 'Login successful',
         user: {
-          id: mockUser.id,
-          email: mockUser.email,
-          firstName: mockUser.firstName,
-          lastName: mockUser.lastName,
-          role: mockUser.role,
+          id: user.id,
+          email: user.email,
+          firstName: user.first_name,
+          lastName: user.last_name,
+          role: user.role,
         },
         token,
       };

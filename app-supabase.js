@@ -1,6 +1,12 @@
-const API_URL = 'https://webond-backend-production.up.railway.app/api/v1';
+// WeBond Frontend with Supabase Integration
+const SUPABASE_URL = 'https://mqghigpyjpjjchbstdhq.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xZ2hpZ3B5cmpwamNoYnN0ZGhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0MjI0MzksImV4cCI6MjA3NTk5ODQzOX0.H1EQwi3ydfY3vQFHohqxmlnWAvnQKJjHe0koYLALCQM';
+
+// Initialize Supabase client
+const { createClient } = supabase;
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 let currentUser = null;
-let currentToken = null;
 let currentTask = null;
 let messageInterval = null;
 
@@ -12,10 +18,8 @@ window.onload = function() {
 
 function loadAuthState() {
     const savedUser = localStorage.getItem('webond_user');
-    const savedToken = localStorage.getItem('webond_token');
-    if (savedUser && savedToken) {
+    if (savedUser) {
         currentUser = JSON.parse(savedUser);
-        currentToken = savedToken;
     }
 }
 
@@ -24,9 +28,9 @@ function updateUI() {
         document.getElementById('authButton').classList.add('hidden');
         document.getElementById('userDisplay').classList.remove('hidden');
         document.getElementById('logoutButton').classList.remove('hidden');
-        document.getElementById('userName').textContent = `${currentUser.firstName} ${currentUser.lastName}`;
+        document.getElementById('userName').textContent = `${currentUser.first_name} ${currentUser.last_name}`;
         document.getElementById('userRole').textContent = currentUser.role.toUpperCase();
-        document.getElementById('userAvatar').textContent = currentUser.firstName[0];
+        document.getElementById('userAvatar').textContent = currentUser.first_name[0];
         document.getElementById('dashboardContent').classList.add('hidden');
         document.getElementById('dashboardLoggedIn').classList.remove('hidden');
         loadDashboardData();
@@ -81,31 +85,32 @@ function showAuthTab(tab) {
 
 async function login(e) {
     e.preventDefault();
-    const data = {
-        email: document.getElementById('loginEmail').value,
-        password: document.getElementById('loginPassword').value,
-    };
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
 
     try {
-        const response = await fetch(`${API_URL}/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password
         });
 
-        const result = await response.json();
-
-        if (response.ok) {
-            currentUser = result.user;
-            currentToken = result.token;
-            localStorage.setItem('webond_user', JSON.stringify(currentUser));
-            localStorage.setItem('webond_token', currentToken);
-            closeAuthModal();
-            updateUI();
-            showStatus('authStatus', '✅ Login successful!', 'success');
-        } else {
-            showStatus('authStatus', `❌ ${result.error || 'Login failed'}`, 'error');
+        if (error) {
+            showStatus('authStatus', `❌ ${error.message}`, 'error');
+            return;
         }
+
+        // Get user profile
+        const { data: profile } = await supabaseClient
+            .from('users')
+            .select('*')
+            .eq('id', data.user.id)
+            .single();
+
+        currentUser = profile;
+        localStorage.setItem('webond_user', JSON.stringify(currentUser));
+        closeAuthModal();
+        updateUI();
+        showStatus('authStatus', '✅ Login successful!', 'success');
     } catch (error) {
         showStatus('authStatus', `❌ Error: ${error.message}`, 'error');
     }
@@ -113,67 +118,78 @@ async function login(e) {
 
 async function register(e) {
     e.preventDefault();
-    const data = {
-        email: document.getElementById('regEmail').value,
-        password: document.getElementById('regPassword').value,
-        firstName: document.getElementById('regFirstName').value,
-        lastName: document.getElementById('regLastName').value,
-        role: document.getElementById('regRole').value,
-    };
+    const email = document.getElementById('regEmail').value;
+    const password = document.getElementById('regPassword').value;
+    const firstName = document.getElementById('regFirstName').value;
+    const lastName = document.getElementById('regLastName').value;
+    const role = document.getElementById('regRole').value;
 
     try {
-        const response = await fetch(`${API_URL}/auth/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+        // Register with Supabase Auth
+        const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+            email: email,
+            password: password
         });
 
-        const result = await response.json();
-
-        if (response.ok) {
-            currentUser = result.user;
-            currentToken = result.token;
-            localStorage.setItem('webond_user', JSON.stringify(currentUser));
-            localStorage.setItem('webond_token', currentToken);
-            closeAuthModal();
-            updateUI();
-            showStatus('authStatus', '✅ Registration successful!', 'success');
-        } else {
-            showStatus('authStatus', `❌ ${result.error || 'Registration failed'}`, 'error');
+        if (authError) {
+            showStatus('authStatus', `❌ ${authError.message}`, 'error');
+            return;
         }
+
+        // Create user profile
+        const { data: profile, error: profileError } = await supabaseClient
+            .from('users')
+            .insert({
+                id: authData.user.id,
+                email: email,
+                first_name: firstName,
+                last_name: lastName,
+                role: role,
+                created_at: new Date().toISOString()
+            })
+            .select()
+            .single();
+
+        if (profileError) {
+            showStatus('authStatus', `❌ ${profileError.message}`, 'error');
+            return;
+        }
+
+        currentUser = profile;
+        localStorage.setItem('webond_user', JSON.stringify(currentUser));
+        closeAuthModal();
+        updateUI();
+        showStatus('authStatus', '✅ Registration successful!', 'success');
     } catch (error) {
         showStatus('authStatus', `❌ Error: ${error.message}`, 'error');
     }
 }
 
 function logout() {
+    supabaseClient.auth.signOut();
     currentUser = null;
-    currentToken = null;
     localStorage.removeItem('webond_user');
-    localStorage.removeItem('webond_token');
     updateUI();
     showPage('dashboard');
 }
 
 // Dashboard
 async function loadDashboardData() {
-    if (!currentToken) return;
+    if (!currentUser) return;
     
     try {
-        const response = await fetch(`${API_URL}/tasks`, {
-            headers: { 'Authorization': `Bearer ${currentToken}` }
-        });
-        const result = await response.json();
-        const tasks = result.tasks || [];
+        const { data, error } = await supabaseClient.rpc('get_my_tasks');
         
-        const myTasks = tasks.filter(t => 
-            t.raiserId === currentUser.id || t.solverId === currentUser.id
-        );
-        
-        document.getElementById('myTasksCount').textContent = myTasks.length;
+        if (error) {
+            console.error('Error loading dashboard:', error);
+            return;
+        }
+
+        const tasks = data.data || [];
+        document.getElementById('myTasksCount').textContent = tasks.length;
         document.getElementById('dashboardBalance').textContent = '1,250.00';
         
-        const recentHTML = myTasks.slice(0, 3).map(task => `
+        const recentHTML = tasks.slice(0, 3).map(task => `
             <div class="transaction-item">
                 <div>
                     <strong>${task.title}</strong>
@@ -194,13 +210,19 @@ async function loadTasks() {
     const status = document.getElementById('filterStatus').value;
     const category = document.getElementById('filterCategory').value;
     
-    let url = `${API_URL}/tasks?status=${status}`;
-    if (category) url += `&category=${category}`;
-
     try {
-        const response = await fetch(url);
-        const result = await response.json();
-        displayTasks(result.data || []);
+        const { data, error } = await supabaseClient.rpc('get_tasks', {
+            p_status: status || null,
+            p_category: category || null,
+            p_location: null
+        });
+
+        if (error) {
+            console.error('Error loading tasks:', error);
+            return;
+        }
+
+        displayTasks(data.data || []);
     } catch (error) {
         console.error('Error loading tasks:', error);
     }
@@ -220,7 +242,7 @@ function displayTasks(tasks) {
             <p>${task.description.substring(0, 120)}...</p>
             <div class="task-meta">
                 <span class="badge ${task.status}">${task.status.replace('_', ' ').toUpperCase()}</span>
-                <span>💰 HKD ${task.reward_amount || task.rewardAmount}</span>
+                <span>💰 HKD ${task.reward_amount}</span>
                 <span>📍 ${task.location}</span>
             </div>
             ${task.status === 'active' && currentUser && currentUser.role !== 'raiser' ? 
@@ -232,23 +254,26 @@ function displayTasks(tasks) {
 
 async function acceptTask(taskId, event) {
     event.stopPropagation();
-    if (!currentToken) {
+    if (!currentUser) {
         showAuthModal();
         return;
     }
 
     try {
-        const response = await fetch(`${API_URL}/tasks/${taskId}/accept`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${currentToken}` }
+        const { data, error } = await supabaseClient.rpc('accept_task', {
+            p_task_id: taskId
         });
 
-        if (response.ok) {
+        if (error) {
+            alert(`❌ ${error.message}`);
+            return;
+        }
+
+        if (data.success) {
             alert('✅ Task accepted successfully!');
             loadTasks();
         } else {
-            const error = await response.json();
-            alert(`❌ ${error.error || 'Failed to accept task'}`);
+            alert(`❌ ${data.error || 'Failed to accept task'}`);
         }
     } catch (error) {
         alert('❌ Error accepting task');
@@ -256,14 +281,14 @@ async function acceptTask(taskId, event) {
 }
 
 function viewTask(task) {
-    alert(`Task: ${task.title}\n\nDescription: ${task.description}\n\nReward: HKD ${task.rewardAmount}\nLocation: ${task.location}\nStatus: ${task.status}`);
+    alert(`Task: ${task.title}\n\nDescription: ${task.description}\n\nReward: HKD ${task.reward_amount}\nLocation: ${task.location}\nStatus: ${task.status}`);
 }
 
 // Create Task
 async function createTask(e) {
     e.preventDefault();
 
-    if (!currentToken) {
+    if (!currentUser) {
         showAuthModal();
         return;
     }
@@ -278,35 +303,34 @@ async function createTask(e) {
         'other': 'daily_life'
     };
 
-    const data = {
-        title: document.getElementById('taskTitle').value,
-        description: document.getElementById('taskDescription').value,
-        category: categoryMap[document.getElementById('taskCategory').value] || 'daily_life',
-        location: document.getElementById('taskLocation').value,
-        rewardAmount: parseInt(document.getElementById('taskReward').value),
-    };
+    const title = document.getElementById('taskTitle').value;
+    const description = document.getElementById('taskDescription').value;
+    const category = categoryMap[document.getElementById('taskCategory').value] || 'daily_life';
+    const location = document.getElementById('taskLocation').value;
+    const rewardAmount = parseInt(document.getElementById('taskReward').value);
 
     try {
-        const response = await fetch(`${API_URL}/tasks`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${currentToken}`
-            },
-            body: JSON.stringify(data)
+        const { data, error } = await supabaseClient.rpc('create_task', {
+            p_title: title,
+            p_description: description,
+            p_category: category,
+            p_location: location,
+            p_reward_amount: rewardAmount,
+            p_deadline: null
         });
 
-        const result = await response.json();
+        if (error) {
+            showStatus('createStatus', `❌ ${error.message}`, 'error');
+            return;
+        }
 
-        if (response.ok) {
-            showStatus('createStatus', `✅ Task created! ID: ${result.data.id.substring(0, 8)}...`, 'success');
+        if (data.success) {
+            showStatus('createStatus', `✅ Task created! ID: ${data.data.id.substring(0, 8)}...`, 'success');
             document.getElementById('createTaskForm').reset();
-            
-            // Task is automatically published when created, no need for separate publish call
             showStatus('createStatus', '✅ Task published successfully!', 'success');
             setTimeout(() => showPage('browse'), 2000);
         } else {
-            showStatus('createStatus', `❌ ${result.error || 'Failed to create task'}`, 'error');
+            showStatus('createStatus', `❌ ${data.error || 'Failed to create task'}`, 'error');
         }
     } catch (error) {
         showStatus('createStatus', `❌ Error: ${error.message}`, 'error');
@@ -315,17 +339,19 @@ async function createTask(e) {
 
 // Chat
 async function loadChatList() {
-    if (!currentToken) return;
+    if (!currentUser) return;
 
     try {
-        const response = await fetch(`${API_URL}/tasks?status=in_progress`, {
-            headers: { 'Authorization': `Bearer ${currentToken}` }
-        });
-        const result = await response.json();
-        const tasks = result.tasks || [];
+        const { data, error } = await supabaseClient.rpc('get_my_tasks');
         
+        if (error) {
+            console.error('Error loading chats:', error);
+            return;
+        }
+
+        const tasks = data.data || [];
         const myTasks = tasks.filter(t => 
-            t.raiserId === currentUser.id || t.solverId === currentUser.id
+            t.raiser_id === currentUser.id || t.solver_id === currentUser.id
         );
 
         const container = document.getElementById('chatList');
@@ -339,7 +365,7 @@ async function loadChatList() {
             <div class="chat-item" onclick="selectChat('${task.id}')">
                 <strong>${task.title}</strong>
                 <div style="font-size: 0.85rem; color: var(--text-light); margin-top: 0.25rem;">
-                    ${task.raiserId === currentUser.id ? 'Solver' : 'Raiser'}: ${task.solver?.firstName || task.raiser?.firstName || 'Unknown'}
+                    ${task.raiser_id === currentUser.id ? 'Solver' : 'Raiser'}: ${task.solver?.first_name || task.raiser?.first_name || 'Unknown'}
                 </div>
             </div>
         `).join('');
@@ -352,18 +378,31 @@ async function selectChat(taskId) {
     if (messageInterval) clearInterval(messageInterval);
 
     try {
-        const response = await fetch(`${API_URL}/tasks/${taskId}`);
-        const task = await response.json();
+        const { data: task, error } = await supabaseClient
+            .from('tasks')
+            .select(`
+                *,
+                raiser:users!tasks_raiser_id_fkey(id, first_name, last_name),
+                solver:users!tasks_solver_id_fkey(id, first_name, last_name)
+            `)
+            .eq('id', taskId)
+            .single();
+
+        if (error) {
+            console.error('Error selecting chat:', error);
+            return;
+        }
+
         currentTask = task;
 
         document.getElementById('chatArea').classList.add('hidden');
         document.getElementById('activeChatArea').classList.remove('hidden');
 
-        const isRaiser = task.raiserId === currentUser.id;
+        const isRaiser = task.raiser_id === currentUser.id;
         const otherUser = isRaiser ? task.solver : task.raiser;
 
         document.getElementById('chatTitle').textContent = task.title;
-        document.getElementById('chatSubtitle').textContent = `Chatting with ${otherUser.firstName} ${otherUser.lastName}`;
+        document.getElementById('chatSubtitle').textContent = `Chatting with ${otherUser.first_name} ${otherUser.last_name}`;
 
         await loadMessages(taskId);
         messageInterval = setInterval(() => loadMessages(taskId), 3000);
@@ -374,12 +413,21 @@ async function selectChat(taskId) {
 
 async function loadMessages(taskId) {
     try {
-        const response = await fetch(`${API_URL}/messages/${taskId}`, {
-            headers: { 'Authorization': `Bearer ${currentToken}` }
-        });
+        const { data: messages, error } = await supabaseClient
+            .from('messages')
+            .select(`
+                *,
+                sender:users!messages_sender_id_fkey(id, first_name, last_name)
+            `)
+            .eq('task_id', taskId)
+            .order('created_at', { ascending: true });
 
-        const result = await response.json();
-        displayMessages(result.messages || []);
+        if (error) {
+            console.error('Error loading messages:', error);
+            return;
+        }
+
+        displayMessages(messages || []);
     } catch (error) {
         console.error('Error loading messages:', error);
     }
@@ -394,14 +442,14 @@ function displayMessages(messages) {
     }
 
     container.innerHTML = messages.map(msg => {
-        const isSent = msg.senderId === currentUser.id;
+        const isSent = msg.sender_id === currentUser.id;
         return `
             <div class="message ${isSent ? 'sent' : 'received'}">
                 <div class="message-content">
-                    <strong>${msg.sender.firstName} ${msg.sender.lastName}</strong>
+                    <strong>${msg.sender.first_name} ${msg.sender.last_name}</strong>
                     <div>${msg.content}</div>
                     <div style="font-size: 0.75rem; opacity: 0.7; margin-top: 0.25rem;">
-                        ${new Date(msg.createdAt).toLocaleTimeString()}
+                        ${new Date(msg.created_at).toLocaleTimeString()}
                     </div>
                 </div>
             </div>
@@ -420,19 +468,21 @@ async function sendMessage() {
     if (!content) return;
 
     try {
-        const response = await fetch(`${API_URL}/messages/${currentTask.id}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${currentToken}`
-            },
-            body: JSON.stringify({ content })
-        });
+        const { error } = await supabaseClient
+            .from('messages')
+            .insert({
+                task_id: currentTask.id,
+                sender_id: currentUser.id,
+                content: content
+            });
 
-        if (response.ok) {
-            input.value = '';
-            await loadMessages(currentTask.id);
+        if (error) {
+            console.error('Error sending message:', error);
+            return;
         }
+
+        input.value = '';
+        await loadMessages(currentTask.id);
     } catch (error) {
         console.error('Error sending message:', error);
     }

@@ -1,53 +1,83 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { CreateTaskDto, UpdateTaskDto } from './dto';
+import { SupabaseService } from '../supabase/supabase.service';
 
 @Injectable()
 export class TasksService {
-  async createTask(raiserId: string, dto: CreateTaskDto) {
-    // Mock task creation
-    const task = {
-      id: 'task_' + Date.now(),
-      raiser_id: raiserId,
-      title: dto.title,
-      description: dto.description,
-      category: dto.category,
-      location: dto.location,
-      reward_amount: dto.rewardAmount,
-      deadline: dto.deadline,
-      status: 'open',
-      created_at: new Date().toISOString(),
-    };
+  constructor(private supabaseService: SupabaseService) {}
 
-    return {
-      success: true,
-      data: task,
-    };
+  async createTask(raiserId: string, dto: CreateTaskDto) {
+    try {
+      const supabase = this.supabaseService.getClient();
+      
+      const { data: task, error } = await supabase
+        .from('tasks')
+        .insert({
+          raiser_id: raiserId,
+          title: dto.title,
+          description: dto.description,
+          category: dto.category,
+          location: dto.location,
+          reward_amount: dto.rewardAmount,
+          preferred_completion_date: dto.deadline,
+          status: 'active', // Set to active when created
+          posted_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Task creation failed: ${error.message}`);
+      }
+
+      return {
+        success: true,
+        data: task,
+      };
+    } catch (error) {
+      console.error('Task creation error:', error);
+      throw new Error('Task creation failed');
+    }
   }
 
   async getTasks(filters: any) {
-    // Mock tasks data
-    const mockTasks = [
-      {
-        id: 'task_1',
-        title: 'Help with visa renewal',
-        description: 'I need assistance with renewing my student visa',
-        category: 'administrative',
-        location: 'Wan Chai, Hong Kong',
-        reward_amount: 200,
-        status: 'open',
-        created_at: new Date().toISOString(),
-        raiser: {
-          id: 'user_1',
-          full_name: 'John Doe',
-          profile_picture: null,
-        },
-      },
-    ];
+    try {
+      const supabase = this.supabaseService.getClient();
+      
+      let query = supabase
+        .from('tasks')
+        .select(`
+          *,
+          raiser:users!tasks_raiser_id_fkey(id, first_name, last_name, profile_photo_url),
+          solver:users!tasks_solver_id_fkey(id, first_name, last_name, profile_photo_url)
+        `)
+        .order('created_at', { ascending: false });
 
-    return {
-      success: true,
-      data: mockTasks,
-    };
+      // Apply filters
+      if (filters.status) {
+        query = query.eq('status', filters.status);
+      }
+      if (filters.category) {
+        query = query.eq('category', filters.category);
+      }
+      if (filters.location) {
+        query = query.ilike('location', `%${filters.location}%`);
+      }
+
+      const { data: tasks, error } = await query;
+
+      if (error) {
+        throw new Error(`Failed to fetch tasks: ${error.message}`);
+      }
+
+      return {
+        success: true,
+        data: tasks || [],
+      };
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      throw new Error('Failed to fetch tasks');
+    }
   }
 
   async getMyTasks(userId: string) {
