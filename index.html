@@ -1043,6 +1043,22 @@
         </div>
     </footer>
 
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        // Fallback: Try to load Supabase from another CDN if the first one fails
+        if (typeof supabase === 'undefined') {
+            console.log('Primary Supabase CDN failed, trying fallback...');
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+            script.onload = function() {
+                console.log('Fallback Supabase CDN loaded successfully');
+            };
+            script.onerror = function() {
+                console.error('Both Supabase CDNs failed to load');
+            };
+            document.head.appendChild(script);
+        }
+    </script>
     <script>
         // Smooth scrolling for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
