@@ -22,8 +22,11 @@ let messageInterval = null;
 // Initialize Supabase client
 function initializeSupabase() {
     try {
+        console.log('Checking if supabase is defined:', typeof supabase);
         if (typeof supabase !== 'undefined') {
+            console.log('Creating Supabase client...');
             supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('Supabase client created:', supabaseClient);
             console.log('Supabase client initialized successfully');
             return true;
         } else {
@@ -38,6 +41,7 @@ function initializeSupabase() {
 
 // Check if Supabase is ready
 function isSupabaseReady() {
+    console.log('Checking if Supabase is ready. supabaseClient:', supabaseClient);
     return supabaseClient !== null;
 }
 
