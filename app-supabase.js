@@ -5,6 +5,16 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // Initialize Supabase client (will be set when page loads)
 let supabaseClient = null;
 
+// Try to initialize immediately if Supabase is already available
+if (typeof supabase !== 'undefined') {
+    try {
+        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('Supabase client initialized immediately');
+    } catch (error) {
+        console.error('Error initializing Supabase immediately:', error);
+    }
+}
+
 let currentUser = null;
 let currentTask = null;
 let messageInterval = null;
@@ -31,22 +41,34 @@ function isSupabaseReady() {
     return supabaseClient !== null;
 }
 
+// Wait for Supabase script to load
+function waitForSupabase() {
+    return new Promise((resolve) => {
+        const checkSupabase = () => {
+            if (typeof supabase !== 'undefined') {
+                resolve(true);
+            } else {
+                setTimeout(checkSupabase, 100);
+            }
+        };
+        checkSupabase();
+    });
+}
+
 // Initialize
-window.onload = function() {
+window.onload = async function() {
+    console.log('Page loaded, waiting for Supabase...');
+    
+    // Wait for Supabase to be available
+    await waitForSupabase();
+    console.log('Supabase library found, initializing...');
+    
     // Try to initialize Supabase
     if (initializeSupabase()) {
         loadAuthState();
         updateUI();
     } else {
-        // Retry after a short delay
-        setTimeout(() => {
-            if (initializeSupabase()) {
-                loadAuthState();
-                updateUI();
-            } else {
-                console.error('Failed to initialize Supabase after retry');
-            }
-        }, 1000);
+        console.error('Failed to initialize Supabase');
     }
 };
 
