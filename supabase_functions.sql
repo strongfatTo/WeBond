@@ -1,6 +1,9 @@
 -- Supabase Database Functions for WeBond
 -- Run these in your Supabase SQL Editor
 
+-- Drop function if it exists to avoid "function name not unique" error during redeployment
+DROP FUNCTION IF EXISTS create_task(TEXT, TEXT, TEXT, TEXT, DECIMAL, TIMESTAMPTZ) CASCADE;
+
 -- Function to create a task
 CREATE OR REPLACE FUNCTION create_task(
   p_title TEXT,
@@ -113,7 +116,7 @@ BEGIN
               )
               ELSE NULL
             END
-          )
+          ) ORDER BY t.created_at DESC
         )
         FROM tasks t
         LEFT JOIN users r ON t.raiser_id = r.id
@@ -121,7 +124,6 @@ BEGIN
         WHERE (p_status IS NULL OR t.status = p_status)
           AND (p_category IS NULL OR t.category = p_category)
           AND (p_location IS NULL OR t.location ILIKE '%' || p_location || '%')
-        ORDER BY t.created_at DESC
       ),
       '[]'::json
     )
@@ -183,40 +185,42 @@ BEGIN
     'success', true,
     'data', COALESCE(
       (
-        SELECT json_agg(
-          json_build_object(
-            'id', t.id,
-            'title', t.title,
-            'description', t.description,
-            'category', t.category,
-            'location', t.location,
-            'reward_amount', t.reward_amount,
-            'status', t.status,
-            'created_at', t.created_at,
-            'raiser_id', t.raiser_id,
-            'solver_id', t.solver_id,
-            'raiser', json_build_object(
-              'id', r.id,
-              'first_name', r.first_name,
-              'last_name', r.last_name,
-              'profile_photo_url', r.profile_photo_url
-            ),
-            'solver', CASE 
-              WHEN s.id IS NOT NULL THEN json_build_object(
-                'id', s.id,
-                'first_name', s.first_name,
-                'last_name', s.last_name,
-                'profile_photo_url', s.profile_photo_url
-              )
-              ELSE NULL
-            END
-          )
-        )
-        FROM tasks t
-        LEFT JOIN users r ON t.raiser_id = r.id
-        LEFT JOIN users s ON t.solver_id = s.id
-        WHERE t.raiser_id = auth.uid() OR t.solver_id = auth.uid()
-        ORDER BY t.created_at DESC
+        SELECT json_agg(task_data)
+        FROM (
+          SELECT
+            json_build_object(
+              'id', t.id,
+              'title', t.title,
+              'description', t.description,
+              'category', t.category,
+              'location', t.location,
+              'reward_amount', t.reward_amount,
+              'status', t.status,
+              'created_at', t.created_at,
+              'raiser_id', t.raiser_id,
+              'solver_id', t.solver_id,
+              'raiser', json_build_object(
+                'id', r.id,
+                'first_name', r.first_name,
+                'last_name', r.last_name,
+                'profile_photo_url', r.profile_photo_url
+              ),
+              'solver', CASE
+                WHEN s.id IS NOT NULL THEN json_build_object(
+                  'id', s.id,
+                  'first_name', s.first_name,
+                  'last_name', s.last_name,
+                  'profile_photo_url', s.profile_photo_url
+                )
+                ELSE NULL
+              END
+            ) AS task_data
+          FROM tasks t
+          LEFT JOIN users r ON t.raiser_id = r.id
+          LEFT JOIN users s ON t.solver_id = s.id
+          WHERE t.raiser_id = auth.uid() OR t.solver_id = auth.uid()
+          ORDER BY t.created_at DESC
+        ) AS ordered_tasks
       ),
       '[]'::json
     )

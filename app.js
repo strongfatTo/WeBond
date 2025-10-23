@@ -1,6 +1,7 @@
 // WeBond Frontend with Supabase Integration - UPDATED
 const SUPABASE_URL = 'https://mqghigpyrjpjchbstdhq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xZ2hpZ3B5cmpwamNoYnN0ZGhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0MjI0MzksImV4cCI6MjA3NTk5ODQzOX0.H1EQwi3ydfY3vQFHohqxmlnWAvnQKJjHe0koYLALCQM';
+const BACKEND_API_URL = 'http://localhost:3000'; // Assuming backend runs on localhost:3000
 
 // Initialize Supabase client (will be set when page loads)
 let supabaseClient = null;
@@ -96,8 +97,11 @@ window.onload = async function() {
 
 function loadAuthState() {
     const savedUser = localStorage.getItem('webond_user');
-    if (savedUser) {
+    const savedToken = localStorage.getItem('jwt_token');
+    if (savedUser && savedToken) {
         currentUser = JSON.parse(savedUser);
+        // Optionally, you might want to store the token in a global variable if needed
+        // For now, we'll just rely on localStorage for retrieval when making requests
     }
 }
 
@@ -164,29 +168,28 @@ function showAuthTab(tab) {
 async function login(e) {
     e.preventDefault();
     
-    if (!isSupabaseReady()) {
-        showStatus('authStatus', '❌ Database not ready. Please refresh the page.', 'error');
-        return;
-    }
-    
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
 
     try {
-        // Find user by email (simplified login for demo)
-        const { data: profile, error } = await supabaseClient
-            .from('users')
-            .select('*')
-            .eq('email', email)
-            .single();
+        const response = await fetch(`${BACKEND_API_URL}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+        });
 
-        if (error || !profile) {
-            showStatus('authStatus', `❌ User not found. Please register first.`, 'error');
-            return;
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Login failed');
         }
 
-        currentUser = profile;
-        localStorage.setItem('webond_user', JSON.stringify(currentUser));
+        localStorage.setItem('jwt_token', data.token);
+        localStorage.setItem('webond_user', JSON.stringify(data.user));
+        currentUser = data.user;
+
         closeAuthModal();
         updateUI();
         showStatus('authStatus', '✅ Login successful!', 'success');
@@ -199,11 +202,6 @@ async function login(e) {
 async function register(e) {
     e.preventDefault();
     
-    if (!isSupabaseReady()) {
-        showStatus('authStatus', '❌ Database not ready. Please refresh the page.', 'error');
-        return;
-    }
-    
     const email = document.getElementById('regEmail').value;
     const password = document.getElementById('regPassword').value;
     const firstName = document.getElementById('regFirstName').value;
@@ -211,35 +209,24 @@ async function register(e) {
     const role = document.getElementById('regRole').value;
 
     try {
-        // Generate a proper UUID v4
-        const userId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-            const r = Math.random() * 16 | 0;
-            const v = c == 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
+        const response = await fetch(`${BACKEND_API_URL}/auth/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password, firstName, lastName, role }),
         });
-        
-        // Create user profile directly (bypassing Supabase Auth for now)
-        const { data: profile, error: profileError } = await supabaseClient
-            .from('users')
-            .insert({
-                id: userId,
-                email: email,
-                first_name: firstName,
-                last_name: lastName,
-                role: role,
-                created_at: new Date().toISOString()
-            })
-            .select()
-            .single();
 
-        if (profileError) {
-            showStatus('authStatus', `❌ ${profileError.message}`, 'error');
-            console.error('Profile creation error:', profileError);
-            return;
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Registration failed');
         }
 
-        currentUser = profile;
-        localStorage.setItem('webond_user', JSON.stringify(currentUser));
+        localStorage.setItem('jwt_token', data.token);
+        localStorage.setItem('webond_user', JSON.stringify(data.user));
+        currentUser = data.user;
+
         closeAuthModal();
         updateUI();
         showStatus('authStatus', '✅ Registration successful!', 'success');
@@ -250,11 +237,13 @@ async function register(e) {
 }
 
 function logout() {
+    // If using Supabase Auth directly, you might still want to sign out from it
     if (supabaseClient && supabaseClient.auth) {
         supabaseClient.auth.signOut();
     }
     currentUser = null;
     localStorage.removeItem('webond_user');
+    localStorage.removeItem('jwt_token'); // Remove the JWT
     updateUI();
     showPage('dashboard');
 }
@@ -406,32 +395,44 @@ async function createTask(e) {
     const category = categoryMap[document.getElementById('taskCategory').value] || 'daily_life';
     const location = document.getElementById('taskLocation').value;
     const rewardAmount = parseInt(document.getElementById('taskReward').value);
+    const token = localStorage.getItem('jwt_token');
+
+    if (!token) {
+        showStatus('createStatus', '❌ Authentication required to create a task.', 'error');
+        showAuthModal();
+        return;
+    }
 
     try {
-        const { data, error } = await supabaseClient.rpc('create_task', {
-            p_title: title,
-            p_description: description,
-            p_category: category,
-            p_location: location,
-            p_reward_amount: rewardAmount,
-            p_deadline: null
+        const response = await fetch(`${BACKEND_API_URL}/tasks`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`, // Include the JWT
+            },
+            body: JSON.stringify({
+                title,
+                description,
+                category,
+                location,
+                rewardAmount,
+                deadline: null // Assuming deadline is not collected from UI yet
+            }),
         });
 
-        if (error) {
-            showStatus('createStatus', `❌ ${error.message}`, 'error');
-            return;
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to create task');
         }
 
-        if (data.success) {
-            showStatus('createStatus', `✅ Task created! ID: ${data.data.id.substring(0, 8)}...`, 'success');
-            document.getElementById('createTaskForm').reset();
-            showStatus('createStatus', '✅ Task published successfully!', 'success');
-            setTimeout(() => showPage('browse'), 2000);
-        } else {
-            showStatus('createStatus', `❌ ${data.error || 'Failed to create task'}`, 'error');
-        }
+        showStatus('createStatus', `✅ Task created! ID: ${data.id.substring(0, 8)}...`, 'success');
+        document.getElementById('createTaskForm').reset();
+        showStatus('createStatus', '✅ Task published successfully!', 'success');
+        setTimeout(() => showPage('browse'), 2000);
     } catch (error) {
         showStatus('createStatus', `❌ Error: ${error.message}`, 'error');
+        console.error('Create task error:', error);
     }
 }
 
