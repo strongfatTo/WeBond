@@ -48,9 +48,19 @@ function isSupabaseReady() {
 // Wait for Supabase script to load
 function waitForSupabase() {
     return new Promise((resolve) => {
+        let attempts = 0;
+        const maxAttempts = 50; // 5 seconds max
+        
         const checkSupabase = () => {
+            attempts++;
+            console.log(`Attempt ${attempts}: Checking for supabase...`);
+            
             if (typeof supabase !== 'undefined') {
+                console.log('Supabase found!');
                 resolve(true);
+            } else if (attempts >= maxAttempts) {
+                console.error('Supabase failed to load after 5 seconds');
+                resolve(false);
             } else {
                 setTimeout(checkSupabase, 100);
             }
@@ -64,15 +74,23 @@ window.onload = async function() {
     console.log('Page loaded, waiting for Supabase...');
     
     // Wait for Supabase to be available
-    await waitForSupabase();
-    console.log('Supabase library found, initializing...');
+    const supabaseLoaded = await waitForSupabase();
     
-    // Try to initialize Supabase
-    if (initializeSupabase()) {
+    if (supabaseLoaded) {
+        console.log('Supabase library found, initializing...');
+        
+        // Try to initialize Supabase
+        if (initializeSupabase()) {
+            loadAuthState();
+            updateUI();
+        } else {
+            console.error('Failed to initialize Supabase');
+        }
+    } else {
+        console.error('Supabase failed to load. App will not work properly.');
+        // Still load the UI so user can see the interface
         loadAuthState();
         updateUI();
-    } else {
-        console.error('Failed to initialize Supabase');
     }
 };
 
