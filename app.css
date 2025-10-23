@@ -20,11 +20,15 @@
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: var(--bg-light);
-    color: white;
+    color: var(--text-dark);
     position: relative;
 }
 
-body * {
+/* Only apply white text to elements that need it */
+.page-header h1,
+.page-header p,
+.wallet-card,
+.message.sent .message-content {
     color: white;
 }
 
@@ -103,6 +107,11 @@ body * {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    color: var(--text-dark);
+}
+
+.user-info * {
+    color: var(--text-dark);
 }
 
 .user-avatar {
@@ -542,6 +551,7 @@ textarea {
     font-size: 2.5rem;
     font-weight: 800;
     margin: 1rem 0;
+    color: white;
 }
 
 .transaction-item {
