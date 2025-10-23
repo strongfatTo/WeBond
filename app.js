@@ -222,7 +222,9 @@ async function register(e) {
 }
 
 function logout() {
-    supabaseClient.auth.signOut();
+    if (supabaseClient && supabaseClient.auth) {
+        supabaseClient.auth.signOut();
+    }
     currentUser = null;
     localStorage.removeItem('webond_user');
     updateUI();
@@ -233,8 +235,15 @@ function logout() {
 async function loadDashboardData() {
     if (!currentUser) return;
     
+    if (!isSupabaseReady()) {
+        console.error('Supabase not ready for dashboard data');
+        return;
+    }
+    
     try {
-        const { data, error } = await supabaseClient.rpc('get_my_tasks');
+        const { data, error } = await supabaseClient.rpc('get_my_tasks', {
+            p_user_id: currentUser.id
+        });
         
         if (error) {
             console.error('Error loading dashboard:', error);
@@ -263,6 +272,11 @@ async function loadDashboardData() {
 
 // Tasks
 async function loadTasks() {
+    if (!isSupabaseReady()) {
+        console.error('Supabase not ready for loading tasks');
+        return;
+    }
+    
     const status = document.getElementById('filterStatus').value;
     const category = document.getElementById('filterCategory').value;
     
