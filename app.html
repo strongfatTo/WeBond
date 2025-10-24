@@ -15,7 +15,7 @@
 
     <!-- Top Navigation -->
     <nav class="top-nav">
-        <div class="logo" onclick="showPage('dashboard')" style="cursor: pointer; display: flex; align-items: center;">
+        <div class="logo" onclick="logoClick()" style="cursor: pointer; display: flex; align-items: center;">
             <img src="assets/webond-logo.png" alt="WeBond Logo" style="height: 70px; width: auto;">
         </div>
         <div class="user-menu">
@@ -42,19 +42,19 @@
                     <i class="fas fa-home"></i>
                     <span>Dashboard</span>
                 </div>
-                <div class="nav-item" onclick="showPage('browse')" data-page="browse">
+                <div class="nav-item logged-in-only" onclick="showPage('browse')" data-page="browse" style="display: none;">
                     <i class="fas fa-search"></i>
                     <span>Browse Tasks</span>
                 </div>
-                <div class="nav-item" onclick="showPage('create')" data-page="create">
+                <div class="nav-item logged-in-only" onclick="showPage('create')" data-page="create" style="display: none;">
                     <i class="fas fa-plus-circle"></i>
                     <span>Create Task</span>
                 </div>
-                <div class="nav-item" onclick="showPage('chat')" data-page="chat">
+                <div class="nav-item logged-in-only" onclick="showPage('chat')" data-page="chat" style="display: none;">
                     <i class="fas fa-comments"></i>
                     <span>Messages</span>
                 </div>
-                <div class="nav-item" onclick="showPage('wallet')" data-page="wallet">
+                <div class="nav-item logged-in-only" onclick="showPage('wallet')" data-page="wallet" style="display: none;">
                     <i class="fas fa-wallet"></i>
                     <span>Wallet</span>
                 </div>
@@ -67,13 +67,13 @@
             <div id="dashboard" class="page active">
                 <div class="page-header">
                     <h1>Welcome to WeBond</h1>
-                    <p>Connect with fellow students. Get help. Earn money. Thrive in Hong Kong. 🎓</p>
+                    <p>Connect with each other. Get help. Earn money. Thrive in Hong Kong. 🎓</p>
                 </div>
                 
                 <div id="dashboardContent">
                     <div class="card">
-                        <h2>👋 Hey Student!</h2>
-                        <p>Join 3,000+ international and local students helping each other in Hong Kong. Get academic support, earn money, navigate city life - all in one place.</p>
+                        <h2>👋 Hey!</h2>
+                        <p>Join different locals and non locals helping each other in Hong Kong. Get help with daily life tasks, earn money, meet new friends - all in one place.</p>
                         <div style="margin: 1.5rem 0;">
                             <div style="background: var(--bg-light); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
                                 <strong>🎓 Need Help?</strong>
@@ -85,7 +85,7 @@
                             </div>
                         </div>
                         <button class="btn-modern" onclick="showAuthModal()" style="border: none; cursor: pointer;">
-                            <i class="fas fa-user-graduate"></i> Join with Student Email 🚀
+                            <i class="fas fa-user-graduate"></i> Join with Email 🚀
                         </button>
                     </div>
                 </div>
@@ -362,12 +362,10 @@
                     <label>Last Name</label>
                     <input type="text" id="regLastName" required>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="display: none;">
                     <label>Role</label>
-                    <select id="regRole" required>
-                        <option value="raiser">Task Raiser (Need Help)</option>
-                        <option value="solver">Task Solver (Can Help)</option>
-                        <option value="both">Both</option>
+                    <select id="regRole">
+                        <option value="both" selected>Both</option>
                     </select>
                 </div>
                 <button type="submit" class="btn-modern" style="width: 100%; border: none; cursor: pointer;">Create Account ✨</button>

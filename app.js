@@ -170,6 +170,12 @@ function updateUI() {
         document.getElementById('userAvatar').textContent = currentUser.first_name[0];
         document.getElementById('dashboardContent').classList.add('hidden');
         document.getElementById('dashboardLoggedIn').classList.remove('hidden');
+        
+        // Show navigation items for logged-in users
+        document.querySelectorAll('.logged-in-only').forEach(item => {
+            item.style.display = 'flex';
+        });
+        
         loadDashboardData();
     } else {
         document.getElementById('authButton').classList.remove('hidden');
@@ -177,6 +183,11 @@ function updateUI() {
         document.getElementById('logoutButton').classList.add('hidden');
         document.getElementById('dashboardContent').classList.remove('hidden');
         document.getElementById('dashboardLoggedIn').classList.add('hidden');
+        
+        // Hide navigation items for non-logged-in users
+        document.querySelectorAll('.logged-in-only').forEach(item => {
+            item.style.display = 'none';
+        });
     }
 }
 
@@ -279,7 +290,7 @@ async function register(e) {
     const password = document.getElementById('regPassword').value;
     const firstName = document.getElementById('regFirstName').value;
     const lastName = document.getElementById('regLastName').value;
-    const role = document.getElementById('regRole').value;
+    const role = 'both'; // All users can raise and solve tasks
 
     try {
         const { data, error } = await supabaseClient.auth.signUp({
@@ -343,6 +354,18 @@ function logout() {
     localStorage.removeItem('webond_user');
     updateUI();
     showPage('dashboard');
+}
+
+function logoClick() {
+    // Log out the user
+    if (supabaseClient && supabaseClient.auth) {
+        supabaseClient.auth.signOut();
+    }
+    currentUser = null;
+    localStorage.removeItem('webond_user');
+    
+    // Redirect to homepage
+    window.location.href = 'index.html';
 }
 
 // Dashboard
