@@ -171,7 +171,7 @@
                 <div class="filters">
                     <div class="filter-group">
                         <label>Status</label>
-                        <select id="filterStatus">
+                        <select id="filterStatus" onchange="loadTasks()">
                             <option value="">All Status</option>
                             <option value="active">Active</option>
                             <option value="in_progress">In Progress</option>
@@ -180,7 +180,7 @@
                     </div>
                     <div class="filter-group">
                         <label>Category</label>
-                        <select id="filterCategory">
+                        <select id="filterCategory" onchange="loadTasks()">
                             <option value="">All Categories</option>
                             <option value="administrative">Administrative</option>
                             <option value="educational">Educational</option>
@@ -200,6 +200,19 @@
                         <div class="empty-state">
                             <i class="fas fa-search"></i>
                             <p>Loading tasks...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Task Detail Modal -->
+                <div id="taskDetailModal" class="modal" style="display: none;">
+                    <div class="modal-content" style="max-width: 600px;">
+                        <div class="modal-header">
+                            <h2 id="taskDetailTitle">Task Details</h2>
+                            <button class="close-btn" onclick="closeTaskDetail()">&times;</button>
+                        </div>
+                        <div class="modal-body" id="taskDetailBody">
+                            <!-- Task details will be inserted here -->
                         </div>
                     </div>
                 </div>

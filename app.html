@@ -15,7 +15,7 @@
 
     <!-- Top Navigation -->
     <nav class="top-nav">
-        <div class="logo" onclick="window.location.href='index.html'" style="cursor: pointer; display: flex; align-items: center;">
+        <div class="logo" onclick="showPage('dashboard')" style="cursor: pointer; display: flex; align-items: center;">
             <img src="assets/webond-logo.png" alt="WeBond Logo" style="height: 70px; width: auto;">
         </div>
         <div class="user-menu">
@@ -150,6 +150,19 @@
                 </div>
 
                 <div id="tasksList" class="grid"></div>
+
+                <!-- Task Detail Modal -->
+                <div id="taskDetailModal" class="modal" style="display: none;">
+                    <div class="modal-content" style="max-width: 600px;">
+                        <div class="modal-header">
+                            <h2 id="taskDetailTitle">Task Details</h2>
+                            <button class="close-btn" onclick="closeTaskDetail()">&times;</button>
+                        </div>
+                        <div class="modal-body" id="taskDetailBody">
+                            <!-- Task details will be inserted here -->
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Create Task Page -->

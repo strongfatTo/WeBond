@@ -8,7 +8,14 @@ let supabaseClient = null;
 // Try to initialize immediately if Supabase is already available
 if (typeof supabase !== 'undefined') {
     try {
-        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+                persistSession: true,
+                autoRefreshToken: true,
+                detectSessionInUrl: true,
+                storage: window.localStorage
+            }
+        });
         console.log('Supabase client initialized immediately');
     } catch (error) {
         console.error('Error initializing Supabase immediately:', error);
@@ -25,7 +32,14 @@ function initializeSupabase() {
         console.log('Checking if supabase is defined:', typeof supabase);
         if (typeof supabase !== 'undefined') {
             console.log('Creating Supabase client...');
-            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                auth: {
+                    persistSession: true,
+                    autoRefreshToken: true,
+                    detectSessionInUrl: true,
+                    storage: window.localStorage
+                }
+            });
             console.log('Supabase client created:', supabaseClient);
             console.log('Supabase client initialized successfully');
             return true;
@@ -351,18 +365,33 @@ async function loadDashboardData() {
         }
 
         const tasks = data.data || [];
-        document.getElementById('myTasksCount').textContent = tasks.length;
+        
+        // Bug 2 & 9 fix: "My Tasks" = tasks I created (as raiser)
+        const myCreatedTasks = tasks.filter(t => t.raiser_id === currentUser.id);
+        document.getElementById('myTasksCount').textContent = myCreatedTasks.length;
+        
+        // Bug 1 fix: "Recent Tasks" = recently accepted/updated tasks (sorted by date)
+        const recentTasks = tasks
+            .sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at))
+            .slice(0, 3);
+        
         document.getElementById('dashboardBalance').textContent = '1,250.00';
         
-        const recentHTML = tasks.slice(0, 3).map(task => `
-            <div class="transaction-item">
-                <div>
-                    <strong>${task.title}</strong>
-                    <div style="font-size: 0.9rem; color: var(--text-light);">${task.status}</div>
+        const recentHTML = recentTasks.map(task => {
+            const isRaiser = task.raiser_id === currentUser.id;
+            const roleLabel = isRaiser ? 'Created' : 'Accepted';
+            return `
+                <div class="transaction-item">
+                    <div>
+                        <strong>${task.title}</strong>
+                        <div style="font-size: 0.9rem; color: var(--text-light);">
+                            ${roleLabel} • ${task.status.replace('_', ' ').toUpperCase()}
+                        </div>
+                    </div>
+                    <span class="badge ${task.status}">${task.status.replace('_', ' ').toUpperCase()}</span>
                 </div>
-                <span class="badge ${task.status}">${task.status}</span>
-            </div>
-        `).join('');
+            `;
+        }).join('');
         
         document.getElementById('recentTasks').innerHTML = recentHTML || '<p style="color: var(--text-light);">No recent tasks</p>';
     } catch (error) {
@@ -440,8 +469,8 @@ function displayTasks(tasks) {
                         <span>💰 HKD ${task.reward_amount || 0}</span>
                         <span>📍 ${task.location || 'Not specified'}</span>
                     </div>
-                    ${task.status === 'active' && currentUser && currentUser.role !== 'raiser' ? 
-                        `<button class="btn btn-primary" style="margin-top: 1rem; width: 100%;" onclick="acceptTask('${task.id}', event)">Accept Task</button>` : 
+                    ${task.status === 'active' && currentUser && currentUser.role !== 'raiser' && task.raiser_id !== currentUser.id ? 
+                        `<button class="btn btn-primary" style="margin-top: 1rem; width: 100%;" onclick="acceptTask('${task.id}', '${task.raiser_id}', event)">Accept Task</button>` : 
                         ''}
                 </div>
             `;
@@ -452,16 +481,23 @@ function displayTasks(tasks) {
     }
 }
 
-async function acceptTask(taskId, event) {
+async function acceptTask(taskId, raiserId, event) {
     event.stopPropagation();
     if (!currentUser) {
         showAuthModal();
         return;
     }
 
+    // Check if user is trying to accept their own task
+    if (raiserId === currentUser.id) {
+        alert('❌ You cannot accept your own task.');
+        return;
+    }
+
     try {
         const { data, error } = await supabaseClient.rpc('accept_task', {
-            p_task_id: taskId
+            p_task_id: taskId,
+            p_solver_id: currentUser.id
         });
 
         if (error) {
@@ -470,8 +506,10 @@ async function acceptTask(taskId, event) {
         }
 
         if (data.success) {
-            alert('✅ Task accepted successfully!');
+            alert('✅ Task accepted successfully! Check Messages to chat.');
             loadTasks();
+            loadDashboardData();
+            loadChatList(); // Bug 3 fix: Refresh chat list
         } else {
             alert(`❌ ${data.error || 'Failed to accept task'}`);
         }
@@ -481,7 +519,125 @@ async function acceptTask(taskId, event) {
 }
 
 function viewTask(task) {
-    alert(`Task: ${task.title}\n\nDescription: ${task.description}\n\nReward: HKD ${task.reward_amount}\nLocation: ${task.location}\nStatus: ${task.status}`);
+    // Display task details in modal instead of alert
+    const modal = document.getElementById('taskDetailModal');
+    const titleEl = document.getElementById('taskDetailTitle');
+    const bodyEl = document.getElementById('taskDetailBody');
+    
+    if (!modal || !titleEl || !bodyEl) {
+        console.error('Task detail modal elements not found');
+        return;
+    }
+    
+    titleEl.textContent = task.title;
+    
+    const raiserName = task.raiser ? `${task.raiser.first_name} ${task.raiser.last_name}` : 'Unknown';
+    const solverName = task.solver ? `${task.solver.first_name} ${task.solver.last_name}` : 'Not assigned';
+    
+    bodyEl.innerHTML = `
+        <div style="margin-bottom: 1.5rem;">
+            <h3 style="margin-bottom: 0.5rem; color: var(--text-dark);">Description</h3>
+            <p style="color: var(--text-light); line-height: 1.6;">${task.description}</p>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <div>
+                <h4 style="margin-bottom: 0.5rem; color: var(--text-dark);">💰 Reward</h4>
+                <p style="font-size: 1.25rem; font-weight: 600; color: var(--primary);">HKD ${task.reward_amount}</p>
+            </div>
+            <div>
+                <h4 style="margin-bottom: 0.5rem; color: var(--text-dark);">📍 Location</h4>
+                <p style="color: var(--text-light);">${task.location}</p>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <div>
+                <h4 style="margin-bottom: 0.5rem; color: var(--text-dark);">📂 Category</h4>
+                <p style="color: var(--text-light);">${task.category ? task.category.replace('_', ' ').toUpperCase() : 'N/A'}</p>
+            </div>
+            <div>
+                <h4 style="margin-bottom: 0.5rem; color: var(--text-dark);">📊 Status</h4>
+                <span class="badge ${task.status}">${task.status.replace('_', ' ').toUpperCase()}</span>
+            </div>
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+            <h4 style="margin-bottom: 0.5rem; color: var(--text-dark);">👤 Task Raiser</h4>
+            <p style="color: var(--text-light);">${raiserName}</p>
+        </div>
+        
+        ${task.solver ? `
+            <div style="margin-bottom: 1.5rem;">
+                <h4 style="margin-bottom: 0.5rem; color: var(--text-dark);">🛠️ Task Solver</h4>
+                <p style="color: var(--text-light);">${solverName}</p>
+            </div>
+        ` : ''}
+        
+        <div style="margin-bottom: 1.5rem;">
+            <h4 style="margin-bottom: 0.5rem; color: var(--text-dark);">📅 Created</h4>
+            <p style="color: var(--text-light);">${new Date(task.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        </div>
+        
+        ${task.status === 'active' && currentUser && currentUser.role !== 'raiser' && task.raiser_id !== currentUser.id ? `
+            <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;" onclick="acceptTaskFromDetail('${task.id}', '${task.raiser_id}')">
+                <i class="fas fa-check"></i> Accept This Task
+            </button>
+        ` : ''}
+        ${task.status === 'active' && currentUser && task.raiser_id === currentUser.id ? `
+            <div style="padding: 1rem; background: #fef3c7; border-radius: 0.5rem; margin-top: 1rem; text-align: center;">
+                <i class="fas fa-info-circle" style="color: #f59e0b;"></i>
+                <span style="color: #92400e; margin-left: 0.5rem;">This is your task</span>
+            </div>
+        ` : ''}
+    `;
+    
+    modal.style.display = 'flex';
+}
+
+function closeTaskDetail() {
+    const modal = document.getElementById('taskDetailModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+async function acceptTaskFromDetail(taskId, raiserId) {
+    closeTaskDetail();
+    
+    if (!currentUser) {
+        showAuthModal();
+        return;
+    }
+
+    // Check if user is trying to accept their own task
+    if (raiserId === currentUser.id) {
+        alert('❌ You cannot accept your own task.');
+        return;
+    }
+
+    try {
+        const { data, error } = await supabaseClient.rpc('accept_task', {
+            p_task_id: taskId,
+            p_solver_id: currentUser.id
+        });
+
+        if (error) {
+            alert(`❌ ${error.message}`);
+            return;
+        }
+
+        if (data.success) {
+            alert('✅ Task accepted successfully! Check Messages to chat.');
+            loadTasks();
+            loadDashboardData();
+            loadChatList(); // Bug 3 fix: Refresh chat list
+        } else {
+            alert(`❌ ${data.error || 'Failed to accept task'}`);
+        }
+    } catch (error) {
+        alert('❌ Error accepting task');
+    }
 }
 
 // Create Task
@@ -550,25 +706,38 @@ async function loadChatList() {
         }
 
         const tasks = data.data || [];
+        // Only show tasks that have been accepted (have both raiser and solver)
         const myTasks = tasks.filter(t => 
-            t.raiser_id === currentUser.id || t.solver_id === currentUser.id
+            (t.raiser_id === currentUser.id || t.solver_id === currentUser.id) &&
+            t.solver_id !== null  // Task must be accepted (has a solver)
         );
 
         const container = document.getElementById('chatList');
         
         if (myTasks.length === 0) {
-            container.innerHTML = '<div class="empty-state"><p>No active chats</p></div>';
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-comments"></i><p>No active chats</p><p style="font-size: 0.9rem; color: var(--text-light); margin-top: 0.5rem;">Chats appear when you accept a task or someone accepts your task</p></div>';
             return;
         }
 
-        container.innerHTML = myTasks.map(task => `
-            <div class="chat-item" onclick="selectChat('${task.id}')">
-                <strong>${task.title}</strong>
-                <div style="font-size: 0.85rem; color: var(--text-light); margin-top: 0.25rem;">
-                    ${task.raiser_id === currentUser.id ? 'Solver' : 'Raiser'}: ${task.solver?.first_name || task.raiser?.first_name || 'Unknown'}
+        container.innerHTML = myTasks.map(task => {
+            // Determine who the other person is
+            const isRaiser = task.raiser_id === currentUser.id;
+            const otherPerson = isRaiser ? task.solver : task.raiser;
+            const otherRole = isRaiser ? 'Solver' : 'Raiser';
+            const otherName = otherPerson ? `${otherPerson.first_name} ${otherPerson.last_name}` : 'Unknown';
+            
+            return `
+                <div class="chat-item" onclick="selectChat('${task.id}')">
+                    <strong>${task.title}</strong>
+                    <div style="font-size: 0.85rem; color: var(--text-light); margin-top: 0.25rem;">
+                        ${otherRole}: ${otherName}
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 0.25rem;">
+                        <span class="badge ${task.status}">${task.status.replace('_', ' ').toUpperCase()}</span>
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     } catch (error) {
         console.error('Error loading chats:', error);
     }
