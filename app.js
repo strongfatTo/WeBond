@@ -764,6 +764,15 @@ async function selectChat(taskId) {
 
         currentTask = task;
 
+        // Update active state for chat items
+        document.querySelectorAll('.chat-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        const activeItem = document.querySelector(`[onclick="selectChat('${taskId}')"]`);
+        if (activeItem) {
+            activeItem.classList.add('active');
+        }
+
         document.getElementById('chatArea').classList.add('hidden');
         document.getElementById('activeChatArea').classList.remove('hidden');
 
