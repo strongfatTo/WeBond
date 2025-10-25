@@ -81,16 +81,18 @@ window.onload = async function() {
         
         // Try to initialize Supabase
         if (initializeSupabase()) {
-            loadAuthState();
+            await loadAuthState();
             updateUI();
+            // Removed handleEmailConfirmation call as per user feedback
         } else {
             console.error('Failed to initialize Supabase');
         }
     } else {
         console.error('Supabase failed to load. App will not work properly.');
         // Still load the UI so user can see the interface
-        loadAuthState();
+        await loadAuthState();
         updateUI();
+        // Removed handleEmailConfirmation call as per user feedback
     }
 };
 
@@ -143,9 +145,13 @@ async function loadAuthState() {
     } else {
         // If no active session, clear any stale data
         currentUser = null;
-        localStorage.removeItem('webond_user');
-    }
+    localStorage.removeItem('webond_user');
+    } // Added missing closing brace
 }
+
+// Removed handleEmailConfirmation function as per user feedback.
+// Email confirmation will now be handled by email-confirm.html directly.
+
 function updateUI() {
     if (currentUser) {
         document.getElementById('authButton').classList.add('hidden');
@@ -383,6 +389,11 @@ async function loadDashboardData() {
         const myCreatedTasks = tasks.filter(t => t.raiser_id === currentUser.id);
         console.log('loadDashboardData: My Created Tasks (filtered):', myCreatedTasks);
         document.getElementById('myTasksCount').textContent = myCreatedTasks.length;
+
+        // New: Count tasks where the current user is the solver and the task is in progress
+        const myInProgressTasks = tasks.filter(t => t.solver_id === currentUser.id && t.status === 'in_progress');
+        console.log('loadDashboardData: My In Progress Tasks (filtered):', myInProgressTasks);
+        document.getElementById('inProgressTasksCount').textContent = myInProgressTasks.length;
         
         // Bug 1 fix: "Recent Tasks" = recently accepted/updated tasks (sorted by date)
         const recentTasks = tasks
@@ -772,7 +783,7 @@ async function selectChat(taskId) {
                 )
             `)
             .eq('task_id', taskId)
-            .single();
+            .maybeSingle();
 
         if (chatError || !chat) {
             console.error('Error selecting chat or chat not found:', chatError);
@@ -794,10 +805,10 @@ async function selectChat(taskId) {
         document.getElementById('chatArea').classList.add('hidden');
         document.getElementById('activeChatArea').classList.remove('hidden');
 
-        const isRaiser = task.raiser_id === currentUser.id;
-        const otherUser = isRaiser ? task.solver : task.raiser;
+        const isRaiser = currentTask.raiser_id === currentUser.id;
+        const otherUser = isRaiser ? currentTask.solver : currentTask.raiser;
 
-        document.getElementById('chatTitle').textContent = task.title;
+        document.getElementById('chatTitle').textContent = currentTask.title;
         document.getElementById('chatSubtitle').textContent = `Chatting with ${otherUser.first_name} ${otherUser.last_name}`;
 
         await loadMessages(currentChatId);

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Confirmation - WeBond</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="app.css">
+    <link rel="stylesheet" href="modern-styles.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .confirmation-container {
+            background-color: var(--bg-card);
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            animation: fadeIn 0.8s ease-out;
+        }
+        .confirmation-container h1 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+        }
+        .confirmation-container p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: var(--text-light);
+        }
+        .confirmation-container .icon {
+            font-size: 4rem;
+            color: var(--success);
+            margin-bottom: 25px;
+            animation: bounceIn 1s ease-out;
+        }
+        .btn-back {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-back:hover {
+            background-color: var(--primary-dark);
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes bounceIn {
+            0%, 20%, 40%, 60%, 80%, 100% {
+                animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+            }
+            0% {
+                opacity: 0;
+                transform: scale3d(0.3, 0.3, 0.3);
+            }
+            20% {
+                transform: scale3d(1.1, 1.1, 1.1);
+            }
+            40% {
+                transform: scale3d(0.9, 0.9, 0.9);
+            }
+            60% {
+                opacity: 1;
+                transform: scale3d(1.03, 1.03, 1.03);
+            }
+            80% {
+                transform: scale3d(0.97, 0.97, 0.97);
+            }
+            100% {
+                opacity: 1;
+                transform: scale3d(1, 1, 1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="neon-background"></div>
+    <div class="neon-overlay"></div>
+
+    <div class="confirmation-container">
+        <div class="icon" id="confirmationIcon"><i class="fas fa-check-circle"></i></div>
+        <h1 id="confirmationTitle">Email Confirmed!</h1>
+        <p id="confirmationMessage">Your email has been successfully verified. You can now return to the main application and log in.</p>
+        <a href="app.html" class="btn-back">Go to Login Page</a>
+        <div id="statusMessage" class="status hidden"></div>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://mqghigpyrjpjchbstdhq.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xZ2hpZ3B5cmpwamNoYnN0ZGhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0MjI0MzksImV4cCI6MjA3NTk5ODQzOX0.H1EQwi3ydfY3vQFHohqxmlnWAvnQKJjHe0koYLALCQM';
+        let supabaseClient = null;
+
+        function initializeSupabase() {
+            try {
+                if (typeof supabase !== 'undefined') {
+                    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    return true;
+                } else {
+                    console.error('Supabase library not loaded');
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error initializing Supabase:', error);
+                return false;
+            }
+        }
+
+        function showStatus(message, type) {
+            const el = document.getElementById('statusMessage');
+            el.className = `status ${type}`;
+            el.textContent = message;
+            el.classList.remove('hidden');
+        }
+
+        window.onload = async function() {
+            const supabaseLoaded = await new Promise((resolve) => {
+                let attempts = 0;
+                const maxAttempts = 50;
+                const checkSupabase = () => {
+                    attempts++;
+                    if (typeof supabase !== 'undefined') {
+                        resolve(true);
+                    } else if (attempts >= maxAttempts) {
+                        resolve(false);
+                    } else {
+                        setTimeout(checkSupabase, 100);
+                    }
+                };
+                checkSupabase();
+            });
+
+            if (supabaseLoaded && initializeSupabase()) {
+                const params = new URLSearchParams(window.location.hash.substring(1));
+                const type = params.get('type');
+                const accessToken = params.get('access_token');
+
+                if (type === 'signup' && accessToken) {
+                    // Supabase automatically handles session for signup confirmation
+                    // We just need to display the success message
+                    document.getElementById('confirmationTitle').textContent = 'Email Confirmed!';
+                    document.getElementById('confirmationMessage').textContent = 'Your email has been successfully verified. You can now return to the main application and log in.';
+                    document.getElementById('confirmationIcon').innerHTML = '<i class="fas fa-check-circle"></i>';
+                    document.getElementById('confirmationIcon').style.color = 'var(--success)';
+                    showStatus('✅ Email confirmed successfully!', 'success');
+                    
+                    // Clear the hash from the URL
+                    window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+                } else {
+                    document.getElementById('confirmationTitle').textContent = 'Confirmation Error';
+                    document.getElementById('confirmationMessage').textContent = 'There was an issue confirming your email. Please try again or contact support.';
+                    document.getElementById('confirmationIcon').innerHTML = '<i class="fas fa-exclamation-circle"></i>';
+                    document.getElementById('confirmationIcon').style.color = 'var(--error)';
+                    showStatus('❌ Email confirmation failed.', 'error');
+                }
+            } else {
+                document.getElementById('confirmationTitle').textContent = 'Error Loading';
+                document.getElementById('confirmationMessage').textContent = 'Could not load necessary components. Please refresh the page.';
+                document.getElementById('confirmationIcon').innerHTML = '<i class="fas fa-times-circle"></i>';
+                document.getElementById('confirmationIcon').style.color = 'var(--error)';
+                showStatus('❌ Supabase not loaded. Please refresh.', 'error');
+            }
+        };
+    </script>
+</body>
+</html>
