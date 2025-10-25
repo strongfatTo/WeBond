@@ -26,11 +26,38 @@ export class AuthService {
       const hashedPassword = await bcrypt.hash(registerDto.password, 10);
       
       // Create user in database
-      const { data: user, error } = await supabase
+      const { data: user, error } = await supabase.auth.signUp({
+        email: registerDto.email,
+        password: registerDto.password,
+        options: {
+          data: {
+            first_name: registerDto.firstName,
+            last_name: registerDto.lastName,
+            role: registerDto.role,
+          },
+          emailRedirectTo: process.env.SUPABASE_EMAIL_REDIRECT_TO || 'http://localhost:3000/app.html', // Or your frontend URL
+        },
+      });
+
+      if (error) {
+        throw new Error(`Registration failed: ${error.message}`);
+      }
+
+      if (user.user && user.user.identities && user.user.identities.length === 0) {
+        // User needs to verify email
+        return {
+          message: 'Registration successful. Please check your email to verify your account before logging in.',
+          user: null,
+          token: null,
+        };
+      }
+
+      // If auto-login happens (e.g., email verification is off or already verified)
+      const { data: profile, error: profileError } = await supabase
         .from('users')
         .insert({
-          email: registerDto.email,
-          password_hash: hashedPassword,
+          id: user.user.id,
+          email: user.user.email,
           first_name: registerDto.firstName,
           last_name: registerDto.lastName,
           role: registerDto.role,
@@ -39,13 +66,14 @@ export class AuthService {
         .select()
         .single();
 
-      if (error) {
-        throw new Error(`Registration failed: ${error.message}`);
+      if (profileError) {
+        // If profile creation fails, consider logging out the user from Supabase Auth
+        await supabase.auth.signOut();
+        throw new Error(`Failed to create user profile: ${profileError.message}`);
       }
 
-      // Generate JWT token
       const token = jwt.sign(
-        { sub: user.id, email: user.email },
+        { sub: profile.id, email: profile.email },
         process.env.JWT_SECRET || 'fallback-secret',
         { expiresIn: '24h' }
       );
@@ -53,11 +81,11 @@ export class AuthService {
       return {
         message: 'User registered successfully',
         user: {
-          id: user.id,
-          email: user.email,
-          firstName: user.first_name,
-          lastName: user.last_name,
-          role: user.role,
+          id: profile.id,
+          email: profile.email,
+          firstName: profile.first_name,
+          lastName: profile.last_name,
+          role: profile.role,
         },
         token,
       };
@@ -71,32 +99,44 @@ export class AuthService {
     try {
       const supabase = this.supabaseService.getClient();
       
-      // Look up user by email
-      const { data: user, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', loginDto.email)
-        .single();
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: loginDto.email,
+        password: loginDto.password,
+      });
 
-      if (error || !user) {
-        throw new Error('Invalid email or password');
+      if (error) {
+        throw new Error(error.message);
       }
 
-      // Verify password
-      const isPasswordValid = await bcrypt.compare(loginDto.password, user.password_hash);
-      if (!isPasswordValid) {
-        throw new Error('Invalid email or password');
+      if (!data.user || !data.session) {
+        throw new Error('Login failed: No user or session data.');
+      }
+
+      // Check if email is verified
+      if (!data.user.email_confirmed_at) {
+        throw new Error('Please verify your email before logging in.');
+      }
+
+      // Fetch user profile from our 'users' table
+      const { data: userProfile, error: profileError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', data.user.id)
+        .single();
+
+      if (profileError || !userProfile) {
+        throw new Error(`Failed to load user profile: ${profileError?.message || 'Profile not found'}`);
       }
 
       // Update last login time
       await supabase
         .from('users')
         .update({ last_login_at: new Date().toISOString() })
-        .eq('id', user.id);
+        .eq('id', userProfile.id);
 
       // Generate JWT token
       const token = jwt.sign(
-        { sub: user.id, email: user.email },
+        { sub: userProfile.id, email: userProfile.email },
         process.env.JWT_SECRET || 'fallback-secret',
         { expiresIn: '24h' }
       );
@@ -104,11 +144,11 @@ export class AuthService {
       return {
         message: 'Login successful',
         user: {
-          id: user.id,
-          email: user.email,
-          firstName: user.first_name,
-          lastName: user.last_name,
-          role: user.role,
+          id: userProfile.id,
+          email: userProfile.email,
+          firstName: userProfile.first_name,
+          lastName: userProfile.last_name,
+          role: userProfile.role,
         },
         token,
       };

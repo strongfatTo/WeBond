@@ -311,7 +311,15 @@ async function register(e) {
             return;
         }
 
-        // Supabase signUp automatically logs in the user and sets the session.
+        if (data.user && data.user.identities && data.user.identities.length === 0) {
+            // User needs to verify email
+            showStatus('authStatus', '✅ Registration successful! Please check your email to verify your account before logging in.', 'success');
+            document.getElementById('registerForm').reset();
+            showAuthTab('login'); // Switch to login tab
+            return;
+        }
+
+        // If auto-login happens (e.g., email verification is off or already verified)
         // We still need to create the user profile in our 'users' table.
         const { data: profile, error: profileError } = await supabaseClient
             .from('users')
@@ -446,16 +454,41 @@ async function loadTasks() {
         });
 
         if (error) {
-            console.error('Error loading tasks:', error);
-            const container = document.getElementById('tasksList');
-            if (container) {
-                container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Error loading tasks: ${error.message}</p></div>`;
+            if (error.message.includes('Email not confirmed')) {
+                showStatus('authStatus', '❌ Please verify your email before logging in.', 'error');
+            } else if (error.message.includes('Invalid login credentials')) {
+                showStatus('authStatus', '❌ Invalid email or password. If you haven\'t signed up, please register first.', 'error');
+            } else {
+                showStatus('authStatus', `❌ ${error.message}`, 'error');
             }
+            console.error('Supabase login error:', error);
             return;
         }
 
-        console.log('Tasks loaded:', data);
-        displayTasks(data.data || []);
+        if (!data.user || !data.session) {
+            showStatus('authStatus', '❌ Login failed: No user or session data.', 'error');
+            return;
+        }
+
+        // Check if email is verified (redundant if backend handles it, but good for frontend validation)
+        if (!data.user.email_confirmed_at) {
+            showStatus('authStatus', '❌ Please verify your email before logging in.', 'error');
+            await supabaseClient.auth.signOut(); // Ensure session is cleared if not verified
+            return;
+        }
+
+        // Fetch user profile from 'users' table after successful Supabase auth
+        const { data: profile, error: profileError } = await supabaseClient
+            .from('users')
+            .select('*')
+            .eq('id', data.user.id)
+            .single();
+
+        if (profileError || !profile) {
+            showStatus('authStatus', `❌ Failed to load user profile: ${profileError?.message || 'Profile not found'}`, 'error');
+            console.error('Profile load error:', profileError);
+            return;
+        }
     } catch (error) {
         console.error('Exception loading tasks:', error);
         const container = document.getElementById('tasksList');
@@ -707,6 +740,7 @@ async function createTask(e) {
             showStatus('createStatus', `✅ Task created! ID: ${data.data.id.substring(0, 8)}...`, 'success');
             document.getElementById('createTaskForm').reset();
             showStatus('createStatus', '✅ Task published successfully!', 'success');
+            loadDashboardData(); // Refresh dashboard after task creation
             setTimeout(() => showPage('browse'), 2000);
         } else {
             showStatus('createStatus', `❌ ${data.error || 'Failed to create task'}`, 'error');
