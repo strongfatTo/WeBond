@@ -330,8 +330,7 @@ async function register(e) {
                 email: email,
                 first_name: firstName,
                 last_name: lastName,
-                role: role,
-                password_hash: 'N/A' // Password is managed by Supabase Auth, not stored directly here
+                role: role
             });
 
         if (insertError) {
