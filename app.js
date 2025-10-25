@@ -510,8 +510,7 @@ async function acceptTask(taskId, raiserId, event) {
 
     try {
         const { data, error } = await supabaseClient.rpc('accept_task', {
-            p_task_id: taskId,
-            p_solver_id: currentUser.id
+            p_task_id: taskId
         });
 
         if (error) {
@@ -632,8 +631,7 @@ async function acceptTaskFromDetail(taskId, raiserId) {
 
     try {
         const { data, error } = await supabaseClient.rpc('accept_task', {
-            p_task_id: taskId,
-            p_solver_id: currentUser.id
+            p_task_id: taskId
         });
 
         if (error) {

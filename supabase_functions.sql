@@ -3,9 +3,12 @@
 
 -- Drop functions if they exist to avoid "function name not unique" error during redeployment
 DROP FUNCTION IF EXISTS create_task(TEXT, TEXT, TEXT, TEXT, DECIMAL, TIMESTAMPTZ) CASCADE;
+DROP FUNCTION IF EXISTS create_task(TEXT, TEXT, TEXT, TEXT, DECIMAL, TIMESTAMPTZ, UUID) CASCADE; -- Add this line to drop the other conflicting function
 DROP FUNCTION IF EXISTS get_tasks(TEXT, TEXT, TEXT) CASCADE;
 DROP FUNCTION IF EXISTS accept_task(UUID) CASCADE;
+DROP FUNCTION IF EXISTS accept_task(UUID, UUID) CASCADE; -- Add this line to drop the other conflicting function
 DROP FUNCTION IF EXISTS get_my_tasks() CASCADE;
+DROP FUNCTION IF EXISTS get_my_tasks(uuid) CASCADE; -- Add this line to drop the conflicting function
 
 -- Function to create a task
 CREATE OR REPLACE FUNCTION create_task(
