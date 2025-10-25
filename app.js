@@ -772,7 +772,7 @@ async function selectChat(taskId) {
                 )
             `)
             .eq('task_id', taskId)
-            .single();
+            .maybeSingle();
 
         if (chatError || !chat) {
             console.error('Error selecting chat or chat not found:', chatError);
@@ -794,10 +794,10 @@ async function selectChat(taskId) {
         document.getElementById('chatArea').classList.add('hidden');
         document.getElementById('activeChatArea').classList.remove('hidden');
 
-        const isRaiser = task.raiser_id === currentUser.id;
-        const otherUser = isRaiser ? task.solver : task.raiser;
+        const isRaiser = currentTask.raiser_id === currentUser.id;
+        const otherUser = isRaiser ? currentTask.solver : currentTask.raiser;
 
-        document.getElementById('chatTitle').textContent = task.title;
+        document.getElementById('chatTitle').textContent = currentTask.title;
         document.getElementById('chatSubtitle').textContent = `Chatting with ${otherUser.first_name} ${otherUser.last_name}`;
 
         await loadMessages(currentChatId);
