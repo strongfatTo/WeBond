@@ -5,22 +5,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // Initialize Supabase client (will be set when page loads)
 let supabaseClient = null;
 
-// Try to initialize immediately if Supabase is already available
-if (typeof supabase !== 'undefined') {
-    try {
-        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-            auth: {
-                persistSession: true,
-                autoRefreshToken: true,
-                detectSessionInUrl: true,
-                storage: window.localStorage
-            }
-        });
-        console.log('Supabase client initialized immediately');
-    } catch (error) {
-        console.error('Error initializing Supabase immediately:', error);
-    }
-}
+
 
 let currentUser = null;
 let currentTask = null;

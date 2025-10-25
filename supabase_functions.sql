@@ -1,8 +1,11 @@
 -- Supabase Database Functions for WeBond
 -- Run these in your Supabase SQL Editor
 
--- Drop function if it exists to avoid "function name not unique" error during redeployment
+-- Drop functions if they exist to avoid "function name not unique" error during redeployment
 DROP FUNCTION IF EXISTS create_task(TEXT, TEXT, TEXT, TEXT, DECIMAL, TIMESTAMPTZ) CASCADE;
+DROP FUNCTION IF EXISTS get_tasks(TEXT, TEXT, TEXT) CASCADE;
+DROP FUNCTION IF EXISTS accept_task(UUID) CASCADE;
+DROP FUNCTION IF EXISTS get_my_tasks() CASCADE;
 
 -- Function to create a task
 CREATE OR REPLACE FUNCTION create_task(
@@ -192,7 +195,7 @@ BEGIN
     'success', true,
     'data', COALESCE(
       (
-        SELECT json_agg(task_data)
+        SELECT json_agg(task_data ORDER BY (task_data->>'created_at')::timestamptz DESC)
         FROM (
           SELECT
             json_build_object(
@@ -226,8 +229,7 @@ BEGIN
           LEFT JOIN users r ON t.raiser_id = r.id
           LEFT JOIN users s ON t.solver_id = s.id
           WHERE t.raiser_id = auth.uid() OR t.solver_id = auth.uid()
-          ORDER BY t.created_at DESC
-        ) AS ordered_tasks
+        ) AS unordered_tasks
       ),
       '[]'::json
     )
