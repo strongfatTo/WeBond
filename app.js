@@ -260,11 +260,21 @@ async function login(e) {
             .from('users')
             .select('*')
             .eq('id', data.user.id)
-            .single();
+            .maybeSingle(); // Changed from .single() to .maybeSingle()
 
-        if (profileError || !profile) {
-            showStatus('authStatus', `❌ Failed to load user profile: ${profileError?.message || 'Profile not found'}`, 'error');
+        if (profileError) { // Removed !profile check here as maybeSingle() returns null if no row found
+            showStatus('authStatus', `❌ Failed to load user profile: ${profileError?.message || 'Error fetching profile'}`, 'error');
             console.error('Profile load error:', profileError);
+            return;
+        }
+        
+        if (!profile) {
+            // Profile doesn't exist - this can happen if registration failed partway
+            console.warn('User authenticated but no profile exists. Logging out...');
+            await supabaseClient.auth.signOut();
+            currentUser = null;
+            localStorage.removeItem('webond_user');
+            showStatus('authStatus', '❌ Your account setup is incomplete. Please register again.', 'error');
             return;
         }
 
@@ -309,6 +319,26 @@ async function register(e) {
         if (error) {
             showStatus('authStatus', `❌ ${error.message}`, 'error');
             console.error('Supabase registration error:', error);
+            return;
+        }
+
+        // If auth signup is successful, insert into our public.users table
+        const { error: insertError } = await supabaseClient
+            .from('users')
+            .insert({
+                id: data.user.id,
+                email: email,
+                first_name: firstName,
+                last_name: lastName,
+                role: role,
+                password_hash: 'N/A' // Password is managed by Supabase Auth, not stored directly here
+            });
+
+        if (insertError) {
+            console.error('Error inserting user into public.users table:', insertError);
+            // Optionally, you might want to roll back the auth user creation here
+            // For now, we'll just log the error and proceed with the email verification message
+            showStatus('authStatus', `❌ Registration failed: ${insertError.message}. Please try again.`, 'error');
             return;
         }
 
