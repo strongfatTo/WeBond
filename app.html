@@ -93,8 +93,13 @@
                 <div id="dashboardLoggedIn" class="hidden">
                     <div class="grid">
                         <div class="card">
-                            <h2><i class="fas fa-tasks"></i> My Tasks</h2>
+                            <h2><i class="fas fa-tasks"></i> My Created Tasks</h2>
                             <p style="font-size: 2rem; font-weight: 800; color: var(--primary);" id="myTasksCount">0</p>
+                            <button class="btn btn-outline" onclick="showPage('browse')">View All</button>
+                        </div>
+                        <div class="card">
+                            <h2><i class="fas fa-hourglass-half"></i> Tasks In Progress</h2>
+                            <p style="font-size: 2rem; font-weight: 800; color: var(--primary);" id="inProgressTasksCount">0</p>
                             <button class="btn btn-outline" onclick="showPage('browse')">View All</button>
                         </div>
                         <div class="card">

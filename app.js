@@ -81,16 +81,18 @@ window.onload = async function() {
         
         // Try to initialize Supabase
         if (initializeSupabase()) {
-            loadAuthState();
+            await loadAuthState();
             updateUI();
+            handleEmailConfirmation(); // Call new function to check for email confirmation
         } else {
             console.error('Failed to initialize Supabase');
         }
     } else {
         console.error('Supabase failed to load. App will not work properly.');
         // Still load the UI so user can see the interface
-        loadAuthState();
+        await loadAuthState();
         updateUI();
+        handleEmailConfirmation(); // Call new function even if Supabase failed to load, in case it's a redirect
     }
 };
 
@@ -143,9 +145,22 @@ async function loadAuthState() {
     } else {
         // If no active session, clear any stale data
         currentUser = null;
-        localStorage.removeItem('webond_user');
+    localStorage.removeItem('webond_user');
+    } // Added missing closing brace
+}
+
+function handleEmailConfirmation() {
+    const params = new URLSearchParams(window.location.hash.substring(1)); // Supabase uses hash for auth redirects
+    const type = params.get('type');
+    const accessToken = params.get('access_token');
+
+    if (type === 'signup' && accessToken) {
+        showStatus('authStatus', '✅ Email confirmed successfully! You can now log in.', 'success');
+        // Clear the hash from the URL to prevent the message from reappearing on refresh
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
     }
 }
+
 function updateUI() {
     if (currentUser) {
         document.getElementById('authButton').classList.add('hidden');
@@ -383,6 +398,11 @@ async function loadDashboardData() {
         const myCreatedTasks = tasks.filter(t => t.raiser_id === currentUser.id);
         console.log('loadDashboardData: My Created Tasks (filtered):', myCreatedTasks);
         document.getElementById('myTasksCount').textContent = myCreatedTasks.length;
+
+        // New: Count tasks where the current user is the solver and the task is in progress
+        const myInProgressTasks = tasks.filter(t => t.solver_id === currentUser.id && t.status === 'in_progress');
+        console.log('loadDashboardData: My In Progress Tasks (filtered):', myInProgressTasks);
+        document.getElementById('inProgressTasksCount').textContent = myInProgressTasks.length;
         
         // Bug 1 fix: "Recent Tasks" = recently accepted/updated tasks (sorted by date)
         const recentTasks = tasks
