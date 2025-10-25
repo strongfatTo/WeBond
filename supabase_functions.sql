@@ -141,6 +141,7 @@ SECURITY DEFINER
 AS $$
 DECLARE
   updated_task tasks%ROWTYPE;
+  new_chat chats%ROWTYPE;
   result JSON;
 BEGIN
   -- Update the task
@@ -158,13 +159,19 @@ BEGIN
     RETURN json_build_object('success', false, 'error', 'Task not found or cannot be accepted');
   END IF;
   
-  -- Return success
+  -- Create a new chat room for the accepted task
+  INSERT INTO chats (task_id, raiser_id, solver_id)
+  VALUES (updated_task.id, updated_task.raiser_id, updated_task.solver_id)
+  RETURNING * INTO new_chat;
+
+  -- Return success with chat_id
   SELECT json_build_object(
     'success', true,
     'data', json_build_object(
       'id', updated_task.id,
       'status', updated_task.status,
-      'accepted_at', updated_task.accepted_at
+      'accepted_at', updated_task.accepted_at,
+      'chat_id', new_chat.id
     )
   ) INTO result;
   

@@ -24,6 +24,7 @@ if (typeof supabase !== 'undefined') {
 
 let currentUser = null;
 let currentTask = null;
+let currentChatId = null; // New variable to store the active chat ID
 let messageInterval = null;
 
 // Initialize Supabase client
@@ -364,15 +365,18 @@ async function loadDashboardData() {
         }
 
         const tasks = data.data || [];
+        console.log('loadDashboardData: Raw tasks from get_my_tasks RPC:', tasks);
         
         // Bug 2 & 9 fix: "My Tasks" = tasks I created (as raiser)
         const myCreatedTasks = tasks.filter(t => t.raiser_id === currentUser.id);
+        console.log('loadDashboardData: My Created Tasks (filtered):', myCreatedTasks);
         document.getElementById('myTasksCount').textContent = myCreatedTasks.length;
         
         // Bug 1 fix: "Recent Tasks" = recently accepted/updated tasks (sorted by date)
         const recentTasks = tasks
             .sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at))
             .slice(0, 3);
+        console.log('loadDashboardData: Recent Tasks (filtered and sorted):', recentTasks);
         
         document.getElementById('dashboardBalance').textContent = '1,250.00';
         
@@ -772,22 +776,27 @@ async function selectChat(taskId) {
     if (messageInterval) clearInterval(messageInterval);
 
     try {
-        const { data: task, error } = await supabaseClient
-            .from('tasks')
+        // Fetch the chat associated with the task
+        const { data: chat, error: chatError } = await supabaseClient
+            .from('chats')
             .select(`
                 *,
-                raiser:users!tasks_raiser_id_fkey(id, first_name, last_name),
-                solver:users!tasks_solver_id_fkey(id, first_name, last_name)
+                task:tasks!chats_task_id_fkey(
+                    *,
+                    raiser:users!tasks_raiser_id_fkey(id, first_name, last_name),
+                    solver:users!tasks_solver_id_fkey(id, first_name, last_name)
+                )
             `)
-            .eq('id', taskId)
+            .eq('task_id', taskId)
             .single();
 
-        if (error) {
-            console.error('Error selecting chat:', error);
+        if (chatError || !chat) {
+            console.error('Error selecting chat or chat not found:', chatError);
             return;
         }
 
-        currentTask = task;
+        currentTask = chat.task; // Set currentTask to the task object within the chat
+        currentChatId = chat.id; // Store the chat_id
 
         // Update active state for chat items
         document.querySelectorAll('.chat-item').forEach(item => {
@@ -807,14 +816,14 @@ async function selectChat(taskId) {
         document.getElementById('chatTitle').textContent = task.title;
         document.getElementById('chatSubtitle').textContent = `Chatting with ${otherUser.first_name} ${otherUser.last_name}`;
 
-        await loadMessages(taskId);
-        messageInterval = setInterval(() => loadMessages(taskId), 3000);
+        await loadMessages(currentChatId);
+        messageInterval = setInterval(() => loadMessages(currentChatId), 3000);
     } catch (error) {
         console.error('Error selecting chat:', error);
     }
 }
 
-async function loadMessages(taskId) {
+async function loadMessages(chatId) {
     try {
         const { data: messages, error } = await supabaseClient
             .from('messages')
@@ -822,7 +831,7 @@ async function loadMessages(taskId) {
                 *,
                 sender:users!messages_sender_id_fkey(id, first_name, last_name)
             `)
-            .eq('task_id', taskId)
+            .eq('chat_id', chatId)
             .order('created_at', { ascending: true });
 
         if (error) {
@@ -863,7 +872,7 @@ function displayMessages(messages) {
 }
 
 async function sendMessage() {
-    if (!currentTask) return;
+    if (!currentChatId) return; // Use currentChatId instead of currentTask
 
     const input = document.getElementById('messageInput');
     const content = input.value.trim();
@@ -874,7 +883,7 @@ async function sendMessage() {
         const { error } = await supabaseClient
             .from('messages')
             .insert({
-                task_id: currentTask.id,
+                chat_id: currentChatId, // Use chat_id
                 sender_id: currentUser.id,
                 content: content
             });
@@ -885,7 +894,7 @@ async function sendMessage() {
         }
 
         input.value = '';
-        await loadMessages(currentTask.id);
+        await loadMessages(currentChatId); // Use currentChatId
     } catch (error) {
         console.error('Error sending message:', error);
     }
