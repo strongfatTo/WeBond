@@ -384,9 +384,7 @@ async function loadDashboardData() {
     }
     
     try {
-        const { data, error } = await supabaseClient.rpc('get_my_tasks', {
-            p_user_id: currentUser.id
-        });
+        const { data, error } = await supabaseClient.rpc('get_my_tasks');
         
         if (error) {
             console.error('Error loading dashboard:', error);
@@ -455,41 +453,15 @@ async function loadTasks() {
         });
 
         if (error) {
-            if (error.message.includes('Email not confirmed')) {
-                showStatus('authStatus', '❌ Please verify your email before logging in.', 'error');
-            } else if (error.message.includes('Invalid login credentials')) {
-                showStatus('authStatus', '❌ Invalid email or password. If you haven\'t signed up, please register first.', 'error');
-            } else {
-                showStatus('authStatus', `❌ ${error.message}`, 'error');
+            console.error('Error loading tasks:', error);
+            showStatus('authStatus', `❌ Error loading tasks: ${error.message}`, 'error'); // Display error prominently
+            const container = document.getElementById('tasksList');
+            if (container) {
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Error loading tasks: ${error.message}</p></div>`;
             }
-            console.error('Supabase login error:', error);
             return;
         }
-
-        if (!data.user || !data.session) {
-            showStatus('authStatus', '❌ Login failed: No user or session data.', 'error');
-            return;
-        }
-
-        // Check if email is verified (redundant if backend handles it, but good for frontend validation)
-        if (!data.user.email_confirmed_at) {
-            showStatus('authStatus', '❌ Please verify your email before logging in.', 'error');
-            await supabaseClient.auth.signOut(); // Ensure session is cleared if not verified
-            return;
-        }
-
-        // Fetch user profile from 'users' table after successful Supabase auth
-        const { data: profile, error: profileError } = await supabaseClient
-            .from('users')
-            .select('*')
-            .eq('id', data.user.id)
-            .single();
-
-        if (profileError || !profile) {
-            showStatus('authStatus', `❌ Failed to load user profile: ${profileError?.message || 'Profile not found'}`, 'error');
-            console.error('Profile load error:', profileError);
-            return;
-        }
+        displayTasks(data.data || []);
     } catch (error) {
         console.error('Exception loading tasks:', error);
         const container = document.getElementById('tasksList');
