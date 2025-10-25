@@ -83,7 +83,7 @@ window.onload = async function() {
         if (initializeSupabase()) {
             await loadAuthState();
             updateUI();
-            handleEmailConfirmation(); // Call new function to check for email confirmation
+            // Removed handleEmailConfirmation call as per user feedback
         } else {
             console.error('Failed to initialize Supabase');
         }
@@ -92,7 +92,7 @@ window.onload = async function() {
         // Still load the UI so user can see the interface
         await loadAuthState();
         updateUI();
-        handleEmailConfirmation(); // Call new function even if Supabase failed to load, in case it's a redirect
+        // Removed handleEmailConfirmation call as per user feedback
     }
 };
 
@@ -149,17 +149,8 @@ async function loadAuthState() {
     } // Added missing closing brace
 }
 
-function handleEmailConfirmation() {
-    const params = new URLSearchParams(window.location.hash.substring(1)); // Supabase uses hash for auth redirects
-    const type = params.get('type');
-    const accessToken = params.get('access_token');
-
-    if (type === 'signup' && accessToken) {
-        showStatus('authStatus', '✅ Email confirmed successfully! You can now log in.', 'success');
-        // Clear the hash from the URL to prevent the message from reappearing on refresh
-        window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
-    }
-}
+// Removed handleEmailConfirmation function as per user feedback.
+// Email confirmation will now be handled by email-confirm.html directly.
 
 function updateUI() {
     if (currentUser) {
@@ -341,8 +332,10 @@ async function register(e) {
             return;
         }
 
-        // Redirect to email-confirm.html after successful registration
-        window.location.href = 'email-confirm.html';
+        // Always return a message indicating email verification is needed.
+        showStatus('authStatus', '✅ Registration successful! Please check your email to verify your account before logging in.', 'success');
+        document.getElementById('registerForm').reset();
+        showAuthTab('login'); // Switch to login tab
         return;
     } catch (error) {
         showStatus('authStatus', `❌ Error: ${error.message}`, 'error');
