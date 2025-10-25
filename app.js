@@ -341,10 +341,8 @@ async function register(e) {
             return;
         }
 
-        // Always return a message indicating email verification is needed.
-        showStatus('authStatus', '✅ Registration successful! Please check your email to verify your account before logging in.', 'success');
-        document.getElementById('registerForm').reset();
-        showAuthTab('login'); // Switch to login tab
+        // Redirect to email-confirm.html after successful registration
+        window.location.href = 'email-confirm.html';
         return;
     } catch (error) {
         showStatus('authStatus', `❌ Error: ${error.message}`, 'error');
