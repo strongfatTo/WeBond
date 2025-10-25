@@ -43,51 +43,12 @@ export class AuthService {
         throw new Error(`Registration failed: ${error.message}`);
       }
 
-      if (user.user && user.user.identities && user.user.identities.length === 0) {
-        // User needs to verify email
-        return {
-          message: 'Registration successful. Please check your email to verify your account before logging in.',
-          user: null,
-          token: null,
-        };
-      }
-
-      // If auto-login happens (e.g., email verification is off or already verified)
-      const { data: profile, error: profileError } = await supabase
-        .from('users')
-        .insert({
-          id: user.user.id,
-          email: user.user.email,
-          first_name: registerDto.firstName,
-          last_name: registerDto.lastName,
-          role: registerDto.role,
-          created_at: new Date().toISOString(),
-        })
-        .select()
-        .single();
-
-      if (profileError) {
-        // If profile creation fails, consider logging out the user from Supabase Auth
-        await supabase.auth.signOut();
-        throw new Error(`Failed to create user profile: ${profileError.message}`);
-      }
-
-      const token = jwt.sign(
-        { sub: profile.id, email: profile.email },
-        process.env.JWT_SECRET || 'fallback-secret',
-        { expiresIn: '24h' }
-      );
-
+      // Always return a message indicating email verification is needed.
+      // The actual user profile in our 'users' table will be created upon first successful login after email verification.
       return {
-        message: 'User registered successfully',
-        user: {
-          id: profile.id,
-          email: profile.email,
-          firstName: profile.first_name,
-          lastName: profile.last_name,
-          role: profile.role,
-        },
-        token,
+        message: 'Registration successful. Please check your email to verify your account before logging in.',
+        user: null,
+        token: null,
       };
     } catch (error) {
       console.error('Registration error:', error);

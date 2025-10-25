@@ -311,43 +311,11 @@ async function register(e) {
             return;
         }
 
-        if (data.user && data.user.identities && data.user.identities.length === 0) {
-            // User needs to verify email
-            showStatus('authStatus', '✅ Registration successful! Please check your email to verify your account before logging in.', 'success');
-            document.getElementById('registerForm').reset();
-            showAuthTab('login'); // Switch to login tab
-            return;
-        }
-
-        // If auto-login happens (e.g., email verification is off or already verified)
-        // We still need to create the user profile in our 'users' table.
-        const { data: profile, error: profileError } = await supabaseClient
-            .from('users')
-            .insert({
-                id: data.user.id, // Use the ID from Supabase Auth
-                email: email,
-                first_name: firstName,
-                last_name: lastName,
-                role: role,
-                created_at: new Date().toISOString()
-            })
-            .select()
-            .single();
-
-        if (profileError) {
-            // If profile creation fails, consider logging out the user from Supabase Auth
-            await supabaseClient.auth.signOut();
-            showStatus('authStatus', `❌ Failed to create user profile: ${profileError.message}`, 'error');
-            console.error('Profile creation error:', profileError);
-            return;
-        }
-        console.log('User profile created successfully:', profile);
-
-        currentUser = profile;
-        localStorage.setItem('webond_user', JSON.stringify(currentUser));
-        closeAuthModal();
-        updateUI();
-        showStatus('authStatus', '✅ Registration successful!', 'success');
+        // Always return a message indicating email verification is needed.
+        showStatus('authStatus', '✅ Registration successful! Please check your email to verify your account before logging in.', 'success');
+        document.getElementById('registerForm').reset();
+        showAuthTab('login'); // Switch to login tab
+        return;
     } catch (error) {
         showStatus('authStatus', `❌ Error: ${error.message}`, 'error');
         console.error('Registration error:', error);
