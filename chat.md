@@ -96,24 +96,33 @@ The landing page exceeded expectations and became the cornerstone of WeBond's br
 - The design pattern was reused across `app.html` and `chat-ui.html` for consistency
 
 ---
-滔check
-### Prompt 3: Real-Time Chat System with WebSocket
+### Prompt 3: Real-Time Chat System with NestJS WebSocket Gateway (Socket.io) & Supabase
 
 **Prompt:**
 ```
-Implement a real-time chat system for WeBond using NestJS WebSocket Gateway 
-and Supabase. Requirements:
+Implement a real-time chat system for WeBond using 
+NestJS WebSocket Gateway (Socket.io) & Supabase Postgres with RLS.
 
-- Users can chat once a task is accepted (raiser ↔ solver)
-- Message history stored in database
-- Real-time delivery with Socket.io
-- Connection state management (online/offline indicators)
-- Typing indicators
-- File sharing support (images, PDFs)
-- Unread message counter
-- Auto-reconnection on network issues
+Hard requirements:
+- Auth handshake: client passes JWT via socket `auth: { token }`; server enforces via `WsJwtGuard`.
+- Rooms: client emits `join_room` with `{ taskId }`; server resolves `chat_id` from `chats` by `task_id` and only allows raiser/solver.
+- Storage: persist messages to `messages.chat_id` with `sender_id`, `content`, `created_at`.
+- Event protocol:
+  - `get_messages { taskId }` → ack `{ event: 'messages', data: Message[] }`
+  - `send_message { taskId, message }` → ack `{ event: 'message_sent', data: Message }` or `{ event: 'error', data: { message } }`
+  - Server push `new_message` on delivery to room participants.
+- HTTP fallback (JWT protected):
+  - `GET /api/v1/messages/:taskId`
+  - `POST /api/v1/messages/:taskId` with body `{ content }`
+- Frontend mapping: server `Message.sender` includes `{ first_name, last_name }`; map to UI `{ firstName, lastName }`.
+- UI behavior: escape HTML, auto-scroll when at bottom, maintain local cache `window.__messages` to avoid duplication.
+- Tasks API: use `/api/tasks` for task list/details.
 
-Show me the backend gateway, service, and frontend integration.
+Nice-to-have:
+- Typing indicators, unread counters, online/offline state, auto-reconnect.
+
+Deliverables:
+- Backend gateway handlers, service methods (using `chat_id`), and frontend integration (socket init, event emissions, HTTP fallback).
 ```
 
 **AI Response Summary:**
@@ -153,13 +162,17 @@ This was a major breakthrough that transformed WeBond from a simple task board t
 **Result:** The modern UI aesthetic became WeBond's signature look. User feedback praised the "premium feel" despite being an MVP.
 
 ---
-滔check
 ### Breakthrough 3: Real-Time Without Complexity
 **Challenge:** Implementing WebSocket chat seemed too complex for MVP timeline.
 
-**AI Solution:** Claude provided a production-ready chat gateway in 45 minutes of prompting.
+**AI Solution:** - Introduced `WsJwtGuard` and token-aware `SupabaseService` to preserve security across WebSocket and HTTP.
+- Room authorization and participant checks eliminated cross-task message leakage.
+- Added explicit `get_messages` handler for reliable, RLS-safe history loading.
+- Frontend refactor standardized API endpoints and improved DOM event handling (no reliance on global `event`).
 
 **Result:** Chat feature launched 2 weeks ahead of schedule. This allowed time to add advanced features like typing indicators and file sharing.
+
+
 
 ---
 
@@ -193,13 +206,21 @@ This was a major breakthrough that transformed WeBond from a simple task board t
 **Result:** Simpler UI, better match rates. Users can found relevant tasks faster.
 
 ---
-滔check
+
 ### Refinement 3: Mobile Responsiveness
 **Initial:** Desktop-first design with basic media queries.
 
 **AI Audit:** Claude analyzed the CSS and generated mobile-optimized layouts with touch-friendly targets.
 
 **Enhancement:** Added swipe gestures for task cards, bottom navigation for chat.
+
+**Implementation Details:**
+- Breakpoints: core layouts adapt at `@media (max-width: 768px)`; the mobile bottom bar appears at `@media (max-width: 640px)`.
+- Navigation: mobile drawer (`.mobile-menu`) slides in with `transform: translateX(...)`; backdrop (`.drawer-backdrop`) supports Escape/outside‑click close and focus trap.
+- Chat layout: `.container` switches to column, `.sidebar` hidden by default; `.chat-area` uses `min-height: 70vh` on mobile.
+- Composer: sticky input (`.input-area { position: sticky; bottom: 0; }`) with `padding-bottom: env(safe-area-inset-bottom)`.
+- Touch targets: `textarea` min-height `48px`, `send-btn` `48×48`, bottom-bar icons `22×22` with stacked labels.
+- Reduced motion: `prefers-reduced-motion` overrides disable message animations and set `scroll-behavior: auto`.
 
 **Result:** Mobile usage increased from 32% to 61% of total traffic.
 

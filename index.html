@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WeBond - AI-Powered Connection Platform for Hong Kong</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles/tokens.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/navigation.css">
     <link rel="stylesheet" href="modern-styles.css">
+    <link rel="stylesheet" href="styles/responsive.css">
     <style>
         :root {
             --primary: #667eea;
@@ -775,11 +779,25 @@
                 <li><a href="#ai">AI Intelligence</a></li>
                 <li><a href="#about">Others</a></li>
             </ul>
-            <div class="nav-actions">
+        <div class="nav-actions">
+            <button id="mobileNavButton" class="btn btn-white show-sm" aria-label="Open menu" aria-controls="mobileMenu" aria-expanded="false"><i class="fas fa-bars"></i></button>
                 <a href="app.html" class="btn btn-primary">Get Started</a>
             </div>
         </div>
     </nav>
+    <!-- Mobile nav drawer -->
+    <div id="mobileMenu" class="mobile-menu" aria-hidden="true" role="navigation" aria-label="Main menu" tabindex="-1">
+      <div class="menu-header">
+        <strong>Menu</strong>
+        <button id="mobileMenuClose" class="btn btn-white" aria-label="Close menu"><i class="fas fa-times"></i></button>
+      </div>
+      <ul>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="app.html">Dashboard</a></li>
+      </ul>
+    </div>
+    <div id="mobileMenuBackdrop" class="drawer-backdrop"></div>
 
     <!-- Hero Section -->
     <section class="hero">
@@ -1075,5 +1093,66 @@
             observer.observe(el);
         });
     </script>
+  <script>
+  (function(){
+    const btn = document.getElementById('mobileNavButton');
+    const menu = document.getElementById('mobileMenu');
+    const backdrop = document.getElementById('mobileMenuBackdrop');
+    const closeBtn = document.getElementById('mobileMenuClose');
+    function trapFocus(container){
+      const focusables = container.querySelectorAll('a, button, input, textarea, select, [tabindex]:not([tabindex="-1"])');
+      if(!focusables.length) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      container.addEventListener('keydown', (e)=>{
+        if(e.key==='Escape') { closeMenu(); }
+        else if(e.key==='Tab'){
+          if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+          else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+        }
+      });
+    }
+    function openMenu(){
+      if(menu && backdrop){
+        menu.classList.add('open');
+        backdrop.classList.add('show');
+        menu.setAttribute('aria-hidden','false');
+        btn && btn.setAttribute('aria-expanded','true');
+        menu.focus();
+        trapFocus(menu);
+      }
+    }
+    function closeMenu(){
+      if(menu && backdrop){
+        menu.classList.remove('open');
+        backdrop.classList.remove('show');
+        menu.setAttribute('aria-hidden','true');
+        btn && btn.setAttribute('aria-expanded','false');
+        btn && btn.focus();
+      }
+    }
+    btn && btn.addEventListener('click', openMenu);
+    closeBtn && closeBtn.addEventListener('click', closeMenu);
+    backdrop && backdrop.addEventListener('click', closeMenu);
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeMenu(); });
+  })();
+  </script>
+  <!-- Mobile bottom action bar -->
+  <div class="bottom-bar" role="toolbar" aria-label="Quick actions">
+    <div class="bar-items">
+      <a class="bar-item" href="#features" aria-label="Discover">
+        <span class="icon">✨</span>
+        <span>Discover</span>
+      </a>
+      <a class="bar-item" href="app.html" aria-label="Hub">
+        <span class="icon">🤝</span>
+        <span>Hub</span>
+      </a>
+      <a class="bar-item" href="chat-ui.html" aria-label="Chat">
+        <span class="icon">💬</span>
+        <span>Chat</span>
+      </a>
+    </div>
+  </div>
 </body>
 </html>

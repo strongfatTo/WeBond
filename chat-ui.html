@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WeBond - Chat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles/tokens.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/navigation.css">
+    <link rel="stylesheet" href="styles/chat.css">
     <style>
         * {
             margin: 0;
@@ -371,7 +376,17 @@
             padding: 20px;
             color: #999;
         }
+        /* Reduced motion alternatives */
+        @media (prefers-reduced-motion: reduce) {
+            .message { animation: none !important; }
+            .neon-background { animation: none !important; transform: none !important; filter: none !important; }
+            .send-btn, .task-item { transition: none !important; }
+            .task-item:hover { transform: none !important; }
+            .mobile-menu { transition: none !important; }
+            .messages-container { scroll-behavior: auto !important; }
+        }
     </style>
+    <link rel="stylesheet" href="styles/responsive.css">
 </head>
 <body>
     <!-- Neon Blur Background -->
@@ -380,7 +395,7 @@
     
     <div class="container">
         <!-- Sidebar with task list -->
-        <div class="sidebar">
+        <div class="sidebar" id="chatSidebar" role="complementary" aria-label="Task list">
             <div class="sidebar-header">
                 <h1>💬 Messages</h1>
                 <div class="user-badge" id="userBadge">Not logged in</div>
@@ -399,12 +414,16 @@
             </div>
 
             <div id="chatContainer" class="hidden">
-                <div class="chat-header">
+    <div class="chat-header">
+        <button id="chatSidebarToggleButton" class="show-sm" aria-label="Open task list" aria-controls="chatSidebar" aria-expanded="false" style="float: right; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; background: white; cursor: pointer;"><i class="fas fa-bars"></i></button>
                     <h2 id="chatTitle">Task Title</h2>
                     <p id="chatSubtitle">Chatting with...</p>
                 </div>
+                <!-- Live regions for screen readers -->
+                <div id="chatStatusLive" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
+                <div id="chatAlertLive" class="visually-hidden" role="alert" aria-live="assertive" aria-atomic="true"></div>
 
-                <div class="messages-container" id="messagesContainer">
+                <div class="messages-container" id="messagesContainer" role="log" aria-live="polite" aria-relevant="additions">
                     <!-- Messages will be loaded here -->
                 </div>
 
@@ -426,11 +445,33 @@
     </div>
 
     <script>
+        // Socket.io client
+        // Using CDN for production-like setup; in app deployments, bundle via build tool
+        // Note: Requires a valid token in localStorage ('webond_token') or Supabase token provided via handshake
+    </script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
         const API_URL = 'http://localhost:3000';
         let currentUser = null;
         let currentToken = null;
         let currentTask = null;
         let messageRefreshInterval = null;
+        let lastMessageCount = 0;
+        let socket = null;
+
+        // Live region helpers
+        function announcePolite(text){
+            const region = document.getElementById('chatStatusLive');
+            if(!region) return;
+            region.textContent = '';
+            region.textContent = text;
+        }
+        function announceAssertive(text){
+            const region = document.getElementById('chatAlertLive');
+            if(!region) return;
+            region.textContent = '';
+            region.textContent = text;
+        }
 
         // Load saved auth on page load
         window.onload = function() {
@@ -441,6 +482,30 @@
                 currentUser = JSON.parse(savedUser);
                 currentToken = savedToken;
                 updateUserBadge();
+                // Initialize socket connection with auth token
+                try {
+                    socket = io(API_URL, {
+                        transports: ['websocket'],
+                        auth: { token: currentToken }
+                    });
+                    socket.on('connect_error', (err) => {
+                        console.error('Socket connect error:', err);
+                    });
+                    socket.on('new_message', (msg) => {
+                        // If message is for the current task, render; otherwise ignore or show unread badge
+                        if (currentTask && msg.task_id === currentTask.id) {
+                            const mapped = mapServerMessage(msg);
+                            window.__messages = [ ...(window.__messages || []), mapped ];
+                            displayMessages(window.__messages);
+                        }
+                    });
+                    socket.on('user_typing', (data) => {
+                        // Optional: show typing indicator
+                        // No-op for now
+                    });
+                } catch (e) {
+                    console.error('Failed to initialize socket:', e);
+                }
                 loadUserTasks();
             } else {
                 document.getElementById('userBadge').innerHTML = '⚠️ Please login first<br><a href="test-ui.html" style="color: white;">Go to Login</a>';
@@ -460,7 +525,7 @@
         async function loadUserTasks() {
             try {
                 // Get tasks where user is involved (as raiser or solver)
-                const response = await fetch(`${API_URL}/backend/tasks?status=in_progress`, {
+                const response = await fetch(`${API_URL}/api/tasks?status=in_progress`, {
                     headers: { 'Authorization': `Bearer ${currentToken}` }
                 });
 
@@ -497,7 +562,7 @@
                 const otherUser = isRaiser ? 'Solver' : 'Raiser';
                 
                 return `
-                    <div class="task-item" onclick="selectTask('${task.id}')">
+                    <div class="task-item" onclick="selectTask('${task.id}', this)">
                         <h3>${task.title}</h3>
                         <p>${otherUser}: ${isRaiser ? task.solver?.firstName || 'Unknown' : task.raiser?.firstName || 'Unknown'}</p>
                         <div class="task-meta">
@@ -509,7 +574,7 @@
             }).join('');
         }
 
-        async function selectTask(taskId) {
+        async function selectTask(taskId, el) {
             // Clear previous interval
             if (messageRefreshInterval) {
                 clearInterval(messageRefreshInterval);
@@ -517,7 +582,9 @@
 
             try {
                 // Get full task details
-                const response = await fetch(`${API_URL}/api/tasks/${taskId}`);
+                const response = await fetch(`${API_URL}/api/tasks/${taskId}`, {
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
                 const task = await response.json();
                 currentTask = task;
 
@@ -530,18 +597,36 @@
 
                 document.getElementById('chatTitle').textContent = task.title;
                 document.getElementById('chatSubtitle').textContent = `Chatting with ${otherUser.firstName} ${otherUser.lastName} (${isRaiser ? 'Solver' : 'Raiser'})`;
+                announcePolite(`Opened chat: ${task.title}. Chatting with ${otherUser.firstName} ${otherUser.lastName}.`);
 
-                // Load messages
-                await loadMessages(taskId);
-
-                // Refresh messages every 3 seconds
-                messageRefreshInterval = setInterval(() => loadMessages(taskId), 3000);
+                // Join room via WebSocket (auth-checked on server)
+                if (socket) {
+                    socket.emit('join_room', { taskId }, (ack) => {
+                        if (ack?.event === 'error') {
+                            console.warn('Join room error:', ack?.data?.message);
+                        }
+                    });
+                    // Request message history via WebSocket (RLS enforced if Supabase token provided separately)
+                    socket.emit('get_messages', { taskId }, (ack) => {
+                        if (ack?.event === 'messages') {
+                            const messages = (ack.data || []).map(mapServerMessage);
+                            window.__messages = messages;
+                            displayMessages(messages);
+                        }
+                    });
+                } else {
+                    // Fallback to HTTP polling if socket missing
+                    await loadMessages(taskId);
+                    messageRefreshInterval = setInterval(() => loadMessages(taskId), 3000);
+                }
 
                 // Mark task as active in sidebar
                 document.querySelectorAll('.task-item').forEach(item => {
                     item.classList.remove('active');
                 });
-                event.target.closest('.task-item').classList.add('active');
+                if (el) {
+                    el.classList.add('active');
+                }
             } catch (error) {
                 console.error('Error selecting task:', error);
             }
@@ -549,7 +634,7 @@
 
         async function loadMessages(taskId) {
             try {
-                const response = await fetch(`${API_URL}/api/messages/${taskId}`, {
+                const response = await fetch(`${API_URL}/api/v1/messages/${taskId}`, {
                     headers: { 'Authorization': `Bearer ${currentToken}` }
                 });
 
@@ -572,6 +657,7 @@
                         <p>Start the conversation!</p>
                     </div>
                 `;
+                announcePolite('No messages yet.');
                 return;
             }
 
@@ -597,6 +683,10 @@
             if (wasAtBottom || messages.length === 1) {
                 container.scrollTop = container.scrollHeight;
             }
+            if(messages.length > lastMessageCount){
+                announcePolite('New messages loaded.');
+            }
+            lastMessageCount = messages.length;
         }
 
         function escapeHtml(text) {
@@ -615,27 +705,49 @@
 
             const sendBtn = document.getElementById('sendBtn');
             sendBtn.disabled = true;
+            announcePolite('Sending message...');
 
             try {
-                const response = await fetch(`${API_URL}/api/messages/${currentTask.id}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentToken}`
-                    },
-                    body: JSON.stringify({ content })
-                });
-
-                if (response.ok) {
-                    input.value = '';
-                    input.style.height = 'auto';
-                    await loadMessages(currentTask.id);
+                if (socket) {
+                    socket.emit('send_message', { taskId: currentTask.id, message: content }, (ack) => {
+                        if (ack?.event === 'message_sent') {
+                            input.value = '';
+                            input.style.height = 'auto';
+                            const msg = mapServerMessage(ack.data);
+                            window.__messages = [ ...(window.__messages || []), msg ];
+                            displayMessages(window.__messages);
+                            announcePolite('Message sent.');
+                        } else if (ack?.event === 'error') {
+                            const msg = `Failed to send: ${ack?.data?.message || 'Unknown error'}`;
+                            announceAssertive(msg);
+                            alert(msg);
+                        }
+                    });
                 } else {
-                    const error = await response.json();
-                    alert(`Failed to send: ${error.error || 'Unknown error'}`);
+                    // HTTP fallback
+                    const response = await fetch(`${API_URL}/api/v1/messages/${currentTask.id}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${currentToken}`
+                        },
+                        body: JSON.stringify({ content })
+                    });
+                    if (response.ok) {
+                        input.value = '';
+                        input.style.height = 'auto';
+                        await loadMessages(currentTask.id);
+                        announcePolite('Message sent.');
+                    } else {
+                        const error = await response.json();
+                        const msg = `Failed to send: ${error.error || 'Unknown error'}`;
+                        announceAssertive(msg);
+                        alert(msg);
+                    }
                 }
             } catch (error) {
                 console.error('Error sending message:', error);
+                announceAssertive('Failed to send message. Please try again.');
                 alert('Failed to send message. Please try again.');
             } finally {
                 sendBtn.disabled = false;
@@ -651,10 +763,72 @@
         }
 
         // Auto-resize textarea
+        // Map server message object to UI-friendly shape
+        function mapServerMessage(msg) {
+            return {
+                id: msg.id,
+                taskId: currentTask?.id || null,
+                senderId: msg.sender_id,
+                content: msg.content,
+                createdAt: msg.created_at,
+                sender: {
+                    firstName: msg.sender?.first_name || 'User',
+                    lastName: msg.sender?.last_name || '',
+                },
+            };
+        }
+
+        // Emit typing events
         document.getElementById('messageInput').addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            if (socket && currentTask) {
+                socket.emit('typing', { taskId: currentTask.id, isTyping: true });
+            }
         });
     </script>
+  <div id="chatSidebarBackdrop" class="drawer-backdrop"></div>
+  <script>
+  (function(){
+    const btn = document.getElementById('chatSidebarToggleButton');
+    const sidebar = document.getElementById('chatSidebar');
+    const backdrop = document.getElementById('chatSidebarBackdrop');
+    function trapFocus(container){
+      const focusables = container.querySelectorAll('a, button, input, textarea, select, [tabindex]:not([tabindex="-1"])');
+      if(!focusables.length) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      container.addEventListener('keydown', (e)=>{
+        if(e.key==='Escape') { close(); }
+        else if(e.key==='Tab'){
+          if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+          else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+        }
+      });
+    }
+    function open(){ if(sidebar){ sidebar.classList.add('open'); sidebar.setAttribute('aria-hidden','false'); btn && btn.setAttribute('aria-expanded','true'); sidebar.focus(); trapFocus(sidebar); } }
+    function close(){ if(sidebar){ sidebar.classList.remove('open'); sidebar.setAttribute('aria-hidden','true'); btn && btn.setAttribute('aria-expanded','false'); btn && btn.focus(); } }
+    btn && btn.addEventListener('click', open);
+    backdrop && backdrop.addEventListener('click', close);
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
+  })();
+  </script>
+  <!-- Mobile bottom action bar -->
+  <div class="bottom-bar" role="toolbar" aria-label="Quick actions">
+    <div class="bar-items">
+      <button class="bar-item btn-ghost" type="button" onclick="document.getElementById('chatSidebarToggleButton').click()" aria-label="Tasks">
+        <span class="icon">📂</span>
+        <span>Tasks</span>
+      </button>
+      <a class="bar-item" href="index.html" aria-label="Home">
+        <span class="icon">🤝</span>
+        <span>Home</span>
+      </a>
+      <button class="bar-item btn-ghost" type="button" onclick="document.getElementById('messageInput').focus()" aria-label="Message">
+        <span class="icon">📝</span>
+        <span>Message</span>
+      </button>
+    </div>
+  </div>
 </body>
 </html>

@@ -1,0 +1,41 @@
+/* Chat specific tweaks: sticky composer and message bubbles */
+
+/* Sticky input area at bottom with safe-area padding */
+.input-area {
+  position: sticky;
+  bottom: 0;
+  background: var(--color-bg);
+  padding-bottom: env(safe-area-inset-bottom);
+  border-top: 1px solid var(--color-border);
+}
+.input-container {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-2);
+}
+
+/* Messages container tweaks */
+.messages-container {
+  scroll-behavior: smooth;
+}
+
+/* Message bubbles */
+.message {
+  max-width: min(75%, 48ch);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+.message.sent { background: color-mix(in oklab, var(--color-primary) 8%, var(--color-surface)); }
+.message.received { background: var(--color-surface); }
+
+@media (max-width: 640px) {
+  .message { max-width: 85%; }
+}
+
+/* Reduced motion overrides */
+@media (prefers-reduced-motion: reduce) {
+  .messages-container { scroll-behavior: auto; }
+  .message { animation: none !important; }
+}

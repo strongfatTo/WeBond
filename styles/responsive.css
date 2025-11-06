@@ -1,0 +1,133 @@
+/* Responsive UI utilities and overrides */
+
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --radius-1: 8px;
+  --radius-2: 12px;
+  --container-max: 1200px;
+}
+
+/* Containers */
+.container,
+.section-container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--space-5);
+}
+
+/* Grid utilities */
+.grid { display: grid; gap: var(--space-4); }
+.grid.cols-2 { grid-template-columns: 1fr; }
+.grid.cols-3 { grid-template-columns: 1fr; }
+
+@media (min-width: 768px) {
+  .grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (min-width: 1024px) {
+  .grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Visibility helpers */
+.hide-sm { display: none !important; }
+@media (min-width: 769px) { .hide-sm { display: initial !important; } }
+.show-sm { display: initial !important; }
+@media (min-width: 769px) { .show-sm { display: none !important; } }
+
+/* Fluid typography */
+h1 { font-size: clamp(1.5rem, 4vw, 2.25rem); }
+h2 { font-size: clamp(1.25rem, 3.2vw, 1.75rem); }
+h3 { font-size: clamp(1.1rem, 2.4vw, 1.3rem); }
+body { padding-bottom: env(safe-area-inset-bottom); }
+
+/* Touch targets */
+button, .btn, input, select, textarea { min-height: 44px; }
+
+/* Navigation (index.html) */
+@media (max-width: 768px) {
+  nav .nav-container { padding: var(--space-3) var(--space-4); flex-wrap: wrap; gap: var(--space-2); }
+  nav .logo img { height: 48px; }
+  nav .nav-links { display: none; }
+  nav .nav-actions { gap: var(--space-2); }
+}
+
+/* Sections (index.html) */
+@media (max-width: 768px) {
+  .section-container { padding: 0 var(--space-4); }
+}
+
+/* App layout (app.html) */
+@media (max-width: 768px) {
+  .top-nav { padding: var(--space-3) var(--space-4); }
+  .app-container { flex-direction: column; }
+  .main-content { padding: var(--space-4); max-height: none; }
+  .sidebar { display: none; width: 100%; }
+}
+
+/* Chat layout (chat-ui.html) */
+@media (max-width: 768px) {
+  .container { flex-direction: column; }
+  .sidebar { display: none; }
+  .chat-area { height: auto; min-height: 70vh; }
+}
+
+/* Drawer overlays and mobile menus */
+@media (max-width: 768px) {
+  .drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1990;
+    display: none;
+  }
+  .drawer-backdrop.show { display: block; }
+
+  /* Mobile nav menu (index.html) */
+  .mobile-menu {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 80%;
+    max-width: 320px;
+    height: 100vh;
+    background: #fff;
+    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.2);
+    z-index: 2000;
+    transform: translateX(100%);
+    transition: transform 0.25s ease;
+    padding: var(--space-5);
+    overflow-y: auto;
+  }
+  .mobile-menu.open { transform: translateX(0); }
+  .mobile-menu .menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-4);
+  }
+  .mobile-menu ul { list-style: none; padding: 0; }
+  .mobile-menu li { margin-bottom: var(--space-3); }
+  .mobile-menu a { color: var(--text-dark, #1e293b); text-decoration: none; font-weight: 600; }
+  .mobile-nav-toggle { background: #fff; border: 1px solid var(--border, #e2e8f0); border-radius: var(--radius-1); padding: var(--space-2) var(--space-3); }
+
+  /* Sidebar drawer (app.html & chat-ui.html) */
+  .sidebar.open {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 80%;
+    max-width: 320px;
+    height: 100vh;
+    background: #fff;
+    box-shadow: 8px 0 24px rgba(0, 0, 0, 0.2);
+    z-index: 2000;
+    overflow-y: auto;
+  }
+}

@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WeBond - Platform Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles/tokens.css">
     <link rel="stylesheet" href="app.css">
     <link rel="stylesheet" href="modern-styles.css">
+    <link rel="stylesheet" href="styles/responsive.css">
 </head>
 <body>
     <!-- Neon Blur Background -->
@@ -29,6 +31,7 @@
                 </div>
             </div>
             <button id="authButton" class="btn btn-primary" onclick="showAuthModal()">Sign In</button>
+            <button id="sidebarToggleButton" class="btn btn-white show-sm" aria-label="Open sidebar" aria-controls="sidebar" aria-expanded="false"><i class="fas fa-bars"></i></button>
             <button id="logoutButton" class="btn btn-outline hidden" onclick="logout()">Logout</button>
         </div>
     </nav>
@@ -36,7 +39,7 @@
     <!-- Main App Container -->
     <div class="app-container">
         <!-- Sidebar Navigation -->
-        <aside class="sidebar" id="sidebar">
+        <aside class="sidebar" id="sidebar" role="complementary" aria-label="App navigation">
             <nav>
                 <div class="nav-item active" onclick="showPage('dashboard')" data-page="dashboard">
                     <i class="fas fa-home"></i>
@@ -395,5 +398,69 @@
         }
     </script>
     <script src="app.js"></script>
+  <div id="appSidebarBackdrop" class="drawer-backdrop"></div>
+  <script>
+  (function(){
+    const btn = document.getElementById('sidebarToggleButton');
+    const sidebar = document.querySelector('.sidebar');
+    const backdrop = document.getElementById('appSidebarBackdrop');
+    function trapFocus(container){
+      const focusables = container.querySelectorAll('a, button, input, textarea, select, [tabindex]:not([tabindex="-1"])');
+      if(!focusables.length) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      container.addEventListener('keydown', (e)=>{
+        if(e.key==='Escape') { close(); }
+        else if(e.key==='Tab'){
+          if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+          else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+        }
+      });
+    }
+    function open(){
+      if(sidebar && backdrop){
+        sidebar.classList.add('open');
+        backdrop.classList.add('show');
+        sidebar.setAttribute('aria-hidden','false');
+        btn && btn.setAttribute('aria-expanded','true');
+        sidebar.focus();
+        trapFocus(sidebar);
+      }
+    }
+    function close(){
+      if(sidebar && backdrop){
+        sidebar.classList.remove('open');
+        backdrop.classList.remove('show');
+        sidebar.setAttribute('aria-hidden','true');
+        btn && btn.setAttribute('aria-expanded','false');
+        btn && btn.focus();
+      }
+    }
+    btn && btn.addEventListener('click', open);
+    backdrop && backdrop.addEventListener('click', close);
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
+  })();
+  </script>
+  <!-- Mobile bottom action bar -->
+  <div class="bottom-bar" role="toolbar" aria-label="Quick actions">
+    <div class="bar-items">
+      <button class="bar-item btn-ghost" type="button" onclick="showPage('dashboard')" aria-label="Hub">
+        <span class="icon">🤝</span>
+        <span>Hub</span>
+      </button>
+      <button class="bar-item btn-ghost" type="button" onclick="showPage('browse')" aria-label="Discover">
+        <span class="icon">🔍</span>
+        <span>Discover</span>
+      </button>
+      <button class="bar-item btn-ghost" type="button" onclick="showPage('create')" aria-label="Post">
+        <span class="icon">➕</span>
+        <span>Post</span>
+      </button>
+      <button class="bar-item btn-ghost" type="button" onclick="showPage('chat')" aria-label="Chat">
+        <span class="icon">💬</span>
+        <span>Chat</span>
+      </button>
+    </div>
+  </div>
 </body>
 </html>
