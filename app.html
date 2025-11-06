@@ -441,6 +441,24 @@
     document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
   })();
   </script>
+  <script>
+  // Deep-link handling for opening specific app sections via hash
+  (function(){
+    function handleHash(){
+      const h = window.location.hash;
+      if(h === '#login'){
+        if(typeof showAuthModal === 'function') showAuthModal();
+        if(typeof showAuthTab === 'function') showAuthTab('login');
+      } else if(h === '#browse'){
+        if(typeof showPage === 'function') showPage('browse');
+      } else if(h === '#chat'){
+        if(typeof showPage === 'function') showPage('chat');
+      }
+    }
+    document.addEventListener('DOMContentLoaded', handleHash);
+    window.addEventListener('hashchange', handleHash);
+  })();
+  </script>
   <!-- Mobile bottom action bar -->
   <div class="bottom-bar" role="toolbar" aria-label="Quick actions">
     <div class="bar-items">
