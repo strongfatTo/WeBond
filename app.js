@@ -1,6 +1,6 @@
 // WeBond Frontend with Supabase Integration - UPDATED
-const SUPABASE_URL = 'https://mqghigpyrjpjchbstdhq.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xZ2hpZ3B5cmpwamNoYnN0ZGhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0MjI0MzksImV4cCI6MjA3NTk5ODQzOX0.H1EQwi3ydfY3vQFHohqxmlnWAvnQKJjHe0koYLALCQM';
+let SUPABASE_URL;
+let SUPABASE_ANON_KEY;
 
 // Initialize Supabase client (will be set when page loads)
 let supabaseClient = null;
@@ -11,6 +11,23 @@ let currentUser = null;
 let currentTask = null;
 let currentChatId = null; // New variable to store the active chat ID
 let messageInterval = null;
+
+// Function to fetch environment variables
+async function loadEnv() {
+    try {
+        const response = await fetch('/.env');
+        const text = await response.text();
+        const lines = text.split('\n');
+        lines.forEach(line => {
+            const [key, value] = line.split('=');
+            if (key === 'SUPABASE_URL') SUPABASE_URL = value.trim();
+            if (key === 'SUPABASE_ANON_KEY') SUPABASE_ANON_KEY = value.trim();
+        });
+    } catch (error) {
+        console.error('Error loading .env file:', error);
+    }
+}
+
 
 // Initialize Supabase client
 function initializeSupabase() {
@@ -71,6 +88,7 @@ function waitForSupabase() {
 
 // Initialize
 window.onload = async function() {
+    await loadEnv(); // Load environment variables first
     console.log('Page loaded, waiting for Supabase...');
     
     // Wait for Supabase to be available
@@ -343,9 +361,13 @@ async function register(e) {
     }
 }
 
-function logout() {
+async function logout() {
     if (supabaseClient && supabaseClient.auth) {
-        supabaseClient.auth.signOut();
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) {
+            console.error('Error during logout:', error);
+            alert('Failed to log out. Please check your network connection and try again. If the problem persists, you may need to configure CORS settings in your Supabase project.');
+        }
     }
     currentUser = null;
     localStorage.removeItem('webond_user');
@@ -353,10 +375,14 @@ function logout() {
     showPage('dashboard');
 }
 
-function logoClick() {
+async function logoClick() {
     // Log out the user
     if (supabaseClient && supabaseClient.auth) {
-        supabaseClient.auth.signOut();
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) {
+            console.error('Error during logout:', error);
+            alert('Failed to log out. Please check your network connection and try again. If the problem persists, you may need to configure CORS settings in your Supabase project.');
+        }
     }
     currentUser = null;
     localStorage.removeItem('webond_user');
