@@ -1,6 +1,6 @@
 // WeBond Frontend with Supabase Integration - UPDATED
-let SUPABASE_URL;
-let SUPABASE_ANON_KEY;
+const SUPABASE_URL = 'https://mqghigpyrjpjchbstdhq.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xZ2hpZ3B5cmpwamNoYnN0ZGhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0MjI0MzksImV4cCI6MjA3NTk5ODQzOX0.H1EQwi3ydfY3vQFHohqxmlnWAvnQKJjHe0koYLALCQM';
 
 // Initialize Supabase client (will be set when page loads)
 let supabaseClient = null;
