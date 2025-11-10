@@ -423,6 +423,30 @@
             text-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
         }
 
+        .feature-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            color: rgba(255, 255, 255, 0.95);
+            line-height: 1.8;
+            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-card ul li {
+            padding: 0.3rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .feature-card ul li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
         /* How It Works */
         .how-it-works {
             padding: 6rem 2rem;
@@ -431,35 +455,58 @@
             z-index: 10;
         }
 
+        .steps-container {
+            position: relative;
+            max-width: 800px;
+            margin: 3rem auto 0;
+        }
+
         .steps {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
+            position: relative;
+            min-height: 400px;
         }
 
         .step {
             text-align: center;
+            position: absolute;
+            width: 100%;
+            opacity: 0;
+            transform: translateX(30px);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+
+        .step.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: auto;
             position: relative;
         }
 
         .step-number {
-            width: 60px;
-            height: 60px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
-            font-size: 1.5rem;
+            font-size: 2rem;
             font-weight: 800;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 1.5rem;
+            margin: 0 auto 2rem;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s;
+        }
+
+        .step.active .step-number {
+            transform: scale(1.1);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
         }
 
         .step h3 {
-            font-size: 1.3rem;
-            margin-bottom: 0.75rem;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
             color: white;
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
@@ -467,6 +514,72 @@
         .step p {
             color: rgba(255, 255, 255, 0.95);
             text-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
+            font-size: 1.1rem;
+            line-height: 1.8;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .step-navigation {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .step-indicators {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .step-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .step-indicator.active {
+            background: white;
+            transform: scale(1.3);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .step-indicator:hover {
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(1.2);
+        }
+
+        .step-btn {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.2rem;
+        }
+
+        .step-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.1);
+        }
+
+        .step-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
         }
 
         /* AI Functions Section */
@@ -478,10 +591,10 @@
         }
 
         .ai-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2.5rem;
-            margin-top: 3rem;
+            position: relative;
+            max-width: 600px;
+            margin: 3rem auto 0;
+            min-height: 500px;
         }
 
         .ai-card {
@@ -491,9 +604,19 @@
             border-radius: 24px;
             border: 2px solid rgba(255, 255, 255, 0.25);
             box-shadow: 0 12px 40px rgba(31, 38, 135, 0.4);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: absolute;
+            width: 100%;
+            opacity: 0;
+            transform: translateX(50px) scale(0.95);
+            pointer-events: none;
+        }
+
+        .ai-card.active {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+            pointer-events: auto;
             position: relative;
-            overflow: hidden;
         }
 
         .ai-card::before {
@@ -508,15 +631,72 @@
             transition: 0.5s;
         }
 
-        .ai-card:hover {
-            transform: translateY(-15px) scale(1.02);
-            box-shadow: 0 25px 70px rgba(102, 126, 234, 0.5);
-            border-color: rgba(255, 255, 255, 0.5);
+        .ai-card.active:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.5);
+            border-color: rgba(255, 255, 255, 0.4);
         }
 
-        .ai-card:hover::before {
-            width: 180px;
-            height: 180px;
+        .ai-card.active:hover::before {
+            width: 150px;
+            height: 150px;
+        }
+
+        .ai-navigation {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .ai-indicators {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .ai-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .ai-indicator.active {
+            background: white;
+            transform: scale(1.3);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .ai-indicator:hover {
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(1.2);
+        }
+
+        .ai-btn {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.2rem;
+        }
+
+        .ai-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.1);
         }
 
         .ai-icon-wrapper {
@@ -744,6 +924,72 @@
             .logo img {
                 height: 55px !important;
             }
+
+            .steps-container {
+                max-width: 100%;
+            }
+
+            .steps {
+                min-height: 350px;
+            }
+
+            .step h3 {
+                font-size: 1.5rem;
+            }
+
+            .step p {
+                font-size: 1rem;
+                padding: 0 1rem;
+            }
+
+            .step-number {
+                width: 70px;
+                height: 70px;
+                font-size: 1.8rem;
+            }
+
+            .step-navigation {
+                gap: 1rem;
+            }
+
+            .step-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 1rem;
+            }
+
+            .ai-grid {
+                max-width: 100%;
+                min-height: 450px;
+            }
+
+            .ai-card {
+                padding: 2rem;
+            }
+
+            .ai-card h3 {
+                font-size: 1.3rem;
+            }
+
+            .ai-card p {
+                font-size: 0.95rem;
+            }
+
+            .ai-icon-wrapper {
+                width: 70px;
+                height: 70px;
+                font-size: 2rem;
+            }
+
+            .ai-navigation {
+                gap: 1rem;
+            }
+
+            .ai-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 1rem;
+            }
         }
 
         /* Animations */
@@ -811,20 +1057,6 @@
                     <a href="app.html" class="btn-modern" style="text-decoration: none;">🚀 Start Using WeBond</a>
                     <a href="app.html" class="btn-neon" style="text-decoration: none;">View Demo</a>
                 </div>
-                <div class="stats">
-                    <div class="stat">
-                        <span class="stat-number">3,000+</span>
-                        <span class="stat-label">People Connected</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-number">8,500+</span>
-                        <span class="stat-label">Tasks Completed</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-number">HKD 2M+</span>
-                        <span class="stat-label">Earned by People</span>
-                    </div>
-                </div>
             </div>
             <!-- Video Frame -->
             <div class="hero-video">
@@ -851,32 +1083,56 @@
                 <div class="feature-card">
                     <div class="feature-icon"><i class="fas fa-graduation-cap"></i></div>
                     <h3>Academic Support</h3>
-                    <p>Get help with assignments, projects, exam prep, or language tutoring from people who excel in those subjects. Exchange knowledge and succeed together.</p>
+                    <ul>
+                        <li>Get help with assignments, projects, and exam prep</li>
+                        <li>Language tutoring from subject experts</li>
+                        <li>Exchange knowledge and succeed together</li>
+                    </ul>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon"><i class="fas fa-money-bill-wave"></i></div>
                     <h3>Earn While Studying</h3>
-                    <p>Use your skills to help other people and earn money. From translation to visa guidance, from city tours to apartment hunting - turn your knowledge into income.</p>
+                    <ul>
+                        <li>Translation, visa guidance, and city tours</li>
+                        <li>Apartment hunting and local services</li>
+                        <li>Turn your knowledge into income</li>
+                    </ul>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon"><i class="fas fa-passport"></i></div>
                     <h3>Visa & Admin Help</h3>
-                    <p>Navigate Hong Kong's bureaucracy with confidence. Get guidance on visa applications, bank accounts, phone plans, and other administrative tasks from experienced people.</p>
+                    <ul>
+                        <li>Visa application guidance</li>
+                        <li>Bank accounts and phone plans setup</li>
+                        <li>Navigate Hong Kong's bureaucracy with confidence</li>
+                    </ul>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon"><i class="fas fa-globe-asia"></i></div>
                     <h3>Cultural Exchange</h3>
-                    <p>Connect international and local people for authentic cultural experiences. Share languages, traditions, and create lasting friendships beyond transactions.</p>
+                    <ul>
+                        <li>Connect international and local people</li>
+                        <li>Share languages and traditions</li>
+                        <li>Create lasting friendships beyond transactions</li>
+                    </ul>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
-                    <h3>People-Verified Community</h3>
-                    <p>University email verification ensures a safe, trusted environment. Rate and review to build reputation and find reliable help.</p>
+                    <div class="feature-icon"><i class="fas fa-lock"></i></div>
+                    <h3>Secure Payment & Escrow</h3>
+                    <ul>
+                        <li>Payments held securely in escrow</li>
+                        <li>Your money is protected</li>
+                        <li>Pay only when satisfied with results</li>
+                    </ul>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon"><i class="fas fa-comments"></i></div>
                     <h3>Instant Communication</h3>
-                    <p>Real-time chat with automatic translation support. Share files, exchange contacts, and coordinate meetups - all within a secure platform.</p>
+                    <ul>
+                        <li>Real-time chat with auto-translation</li>
+                        <li>Share files and exchange contacts</li>
+                        <li>Coordinate meetups securely</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -889,26 +1145,42 @@
                 <h2>How WeBond Works</h2>
                 <p>Get started in minutes and connect with your community</p>
             </div>
-            <div class="steps">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <h3>A Verified Community</h3>
-                    <p>Join with your email to ensure a safe, trusted, and high-quality network.</p>
+            <div class="steps-container">
+                <div class="steps">
+                    <div class="step active" data-step="1">
+                        <div class="step-number">1</div>
+                        <h3>A Verified Community</h3>
+                        <p>Join with your email to ensure a safe, trusted, and high-quality network.</p>
+                    </div>
+                    <div class="step" data-step="2">
+                        <div class="step-number">2</div>
+                        <h3>Need Help or Offer Help?</h3>
+                        <p>Post what you need (visa help, assignment guidance, apartment search) OR browse tasks where you can use your skills to earn money.</p>
+                    </div>
+                    <div class="step" data-step="3">
+                        <div class="step-number">3</div>
+                        <h3>Secure Communication, Seamless Coordination</h3>
+                        <p>Discuss details, share files, and arrange meetups—all within our protected platform.</p>
+                    </div>
+                    <div class="step" data-step="4">
+                        <div class="step-number">4</div>
+                        <h3>Complete & Get Paid</h3>
+                        <p>Finish the task safely. Payments held in escrow until completion. Build your reputation with reviews and earn more!</p>
+                    </div>
                 </div>
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <h3>Need Help or Offer Help?</h3>
-                    <p>Post what you need (visa help, assignment guidance, apartment search) OR browse tasks where you can use your skills to earn money.</p>
-                </div>
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <h3>Secure Communication, Seamless Coordination</h3>
-                    <p>Discuss details, share files, and arrange meetups—all within our protected platform.</p>
-                </div>
-                <div class="step">
-                    <div class="step-number">4</div>
-                    <h3>Complete & Get Paid</h3>
-                    <p>Finish the task safely. Payments held in escrow until completion. Build your reputation with reviews and earn more!</p>
+                <div class="step-navigation">
+                    <button class="step-btn" id="prevStep" aria-label="Previous step">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div class="step-indicators">
+                        <div class="step-indicator active" data-step="1" aria-label="Step 1"></div>
+                        <div class="step-indicator" data-step="2" aria-label="Step 2"></div>
+                        <div class="step-indicator" data-step="3" aria-label="Step 3"></div>
+                        <div class="step-indicator" data-step="4" aria-label="Step 4"></div>
+                    </div>
+                    <button class="step-btn" id="nextStep" aria-label="Next step">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -928,7 +1200,7 @@
             </div>
             <div class="ai-grid">
                 <!-- AI Function 1: Smart Matching -->
-                <div class="ai-card">
+                <div class="ai-card active" data-ai="1">
                     <div class="ai-icon-wrapper">
                         <i class="fas fa-brain"></i>
                     </div>
@@ -946,7 +1218,7 @@
                 </div>
 
                 <!-- AI Function 2: Fraud Detection -->
-                <div class="ai-card">
+                <div class="ai-card" data-ai="2">
                     <div class="ai-icon-wrapper">
                         <i class="fas fa-shield-alt"></i>
                     </div>
@@ -964,7 +1236,7 @@
                 </div>
 
                 <!-- AI Function 3: Task Assistant -->
-                <div class="ai-card">
+                <div class="ai-card" data-ai="3">
                     <div class="ai-icon-wrapper">
                         <i class="fas fa-robot"></i>
                     </div>
@@ -982,7 +1254,7 @@
                 </div>
 
                 <!-- AI Function 4: Dispute Resolution -->
-                <div class="ai-card">
+                <div class="ai-card" data-ai="4">
                     <div class="ai-icon-wrapper">
                         <i class="fas fa-balance-scale"></i>
                     </div>
@@ -999,13 +1271,27 @@
                     <div class="ai-badge">Dialogue Analysis + Rule Engine</div>
                 </div>
             </div>
+            <div class="ai-navigation">
+                <button class="ai-btn" id="prevAI" aria-label="Previous AI function">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="ai-indicators">
+                    <div class="ai-indicator active" data-ai="1" aria-label="AI Function 1"></div>
+                    <div class="ai-indicator" data-ai="2" aria-label="AI Function 2"></div>
+                    <div class="ai-indicator" data-ai="3" aria-label="AI Function 3"></div>
+                    <div class="ai-indicator" data-ai="4" aria-label="AI Function 4"></div>
+                </div>
+                <button class="ai-btn" id="nextAI" aria-label="Next AI function">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
         </div>
     </section>
 
     <!-- CTA Section -->
     <section class="cta">
         <div class="section-container">
-            <h2>Join 3,000+ People Already Thriving</h2>
+            <h2>Ready to Get Started?</h2>
             <p style="font-size: 1.2rem; margin-bottom: 2.5rem;">Whether you need help settling in Hong Kong or want to earn money with your skills - start today!</p>
             <div class="hero-actions" style="justify-content: center;">
                 <a href="app.html" class="btn-modern" style="text-decoration: none;">✨ Create Account</a>
@@ -1090,9 +1376,185 @@
             });
         }, { threshold: 0.1 });
 
-        document.querySelectorAll('.feature-card, .step, .tech-item, .ai-card').forEach(el => {
+        document.querySelectorAll('.feature-card, .tech-item, .ai-card').forEach(el => {
             observer.observe(el);
         });
+    </script>
+    <script>
+        // Step Navigation Functionality
+        (function() {
+            let currentStep = 1;
+            const totalSteps = 4;
+            const steps = document.querySelectorAll('.step');
+            const indicators = document.querySelectorAll('.step-indicator');
+            const prevBtn = document.getElementById('prevStep');
+            const nextBtn = document.getElementById('nextStep');
+
+            function updateStep(step) {
+                // Update steps
+                steps.forEach((s, index) => {
+                    if (index + 1 === step) {
+                        s.classList.add('active');
+                    } else {
+                        s.classList.remove('active');
+                    }
+                });
+
+                // Update indicators
+                indicators.forEach((indicator, index) => {
+                    if (index + 1 === step) {
+                        indicator.classList.add('active');
+                    } else {
+                        indicator.classList.remove('active');
+                    }
+                });
+
+                // Update buttons
+                prevBtn.disabled = step === 1;
+                nextBtn.disabled = step === totalSteps;
+
+                currentStep = step;
+            }
+
+            // Next button
+            nextBtn.addEventListener('click', () => {
+                if (currentStep < totalSteps) {
+                    updateStep(currentStep + 1);
+                }
+            });
+
+            // Previous button
+            prevBtn.addEventListener('click', () => {
+                if (currentStep > 1) {
+                    updateStep(currentStep - 1);
+                }
+            });
+
+            // Indicator clicks
+            indicators.forEach((indicator, index) => {
+                indicator.addEventListener('click', () => {
+                    updateStep(index + 1);
+                });
+            });
+
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                    return;
+                }
+                if (e.key === 'ArrowLeft' && currentStep > 1) {
+                    updateStep(currentStep - 1);
+                } else if (e.key === 'ArrowRight' && currentStep < totalSteps) {
+                    updateStep(currentStep + 1);
+                }
+            });
+
+            // Initialize
+            updateStep(1);
+        })();
+    </script>
+    <script>
+        // AI Functions Auto-scroll Functionality
+        (function() {
+            let currentAI = 1;
+            const totalAI = 4;
+            const aiCards = document.querySelectorAll('.ai-card');
+            const aiIndicators = document.querySelectorAll('.ai-indicator');
+            const prevAIBtn = document.getElementById('prevAI');
+            const nextAIBtn = document.getElementById('nextAI');
+            const aiFunctionsSection = document.getElementById('ai');
+
+            let autoScrollInterval;
+            const autoScrollDelay = 5000; // 5 seconds per card
+
+            function updateAI(aiIndex) {
+                // Update cards
+                aiCards.forEach((card, index) => {
+                    if (index + 1 === aiIndex) {
+                        card.classList.add('active');
+                    } else {
+                        card.classList.remove('active');
+                    }
+                });
+
+                // Update indicators
+                aiIndicators.forEach((indicator, index) => {
+                    if (index + 1 === aiIndex) {
+                        indicator.classList.add('active');
+                    } else {
+                        indicator.classList.remove('active');
+                    }
+                });
+
+                currentAI = aiIndex;
+            }
+
+            function nextAI() {
+                let newAI = currentAI + 1;
+                if (newAI > totalAI) {
+                    newAI = 1; // Loop back to first
+                }
+                updateAI(newAI);
+            }
+
+            function prevAI() {
+                let newAI = currentAI - 1;
+                if (newAI < 1) {
+                    newAI = totalAI; // Loop to last
+                }
+                updateAI(newAI);
+            }
+
+            // Auto-scroll functions
+            function startAutoScroll() {
+                if (autoScrollInterval) {
+                    clearInterval(autoScrollInterval);
+                }
+                autoScrollInterval = setInterval(nextAI, autoScrollDelay);
+            }
+
+            function stopAutoScroll() {
+                if (autoScrollInterval) {
+                    clearInterval(autoScrollInterval);
+                    autoScrollInterval = null;
+                }
+            }
+
+            function resetAutoScroll() {
+                stopAutoScroll();
+                startAutoScroll();
+            }
+
+            // Next button
+            nextAIBtn.addEventListener('click', () => {
+                nextAI();
+                resetAutoScroll();
+            });
+
+            // Previous button
+            prevAIBtn.addEventListener('click', () => {
+                prevAI();
+                resetAutoScroll();
+            });
+
+            // Indicator clicks
+            aiIndicators.forEach((indicator, index) => {
+                indicator.addEventListener('click', () => {
+                    updateAI(index + 1);
+                    resetAutoScroll();
+                });
+            });
+
+            // Pause auto-scroll on hover, resume on leave
+            if (aiFunctionsSection) {
+                aiFunctionsSection.addEventListener('mouseenter', stopAutoScroll);
+                aiFunctionsSection.addEventListener('mouseleave', startAutoScroll);
+            }
+
+            // Initialize
+            updateAI(1);
+            startAutoScroll(); // Start auto-scrolling
+        })();
     </script>
   <script>
   (function(){
