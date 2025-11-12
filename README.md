@@ -66,6 +66,26 @@ WeBond/
 
 ---
 
+## 🧠 AI Core Functions
+
+### 1. Intelligent Matching Engine
+- **Core Function**: Connects task raisers and solvers efficiently.
+- **Matching Factors**: Skills, location, language, availability, and past ratings.
+
+### 2. Fraud & Risk Manager
+- **Core Function**: Detects suspicious behavior, fake accounts, and scams in real time to maintain compliance with local regulations.
+
+### 3. Task Description Enhancer
+- **Core Functions**:
+  - Helps users write clear, bilingual (English + Chinese) task descriptions.
+  - Suggests fair pay ranges based on task type and market data.
+  - Estimates reasonable completion time for each task.
+
+### 4. Dispute Resolution Engine
+- **Core Function**: In case of disagreements, AI analyzes chat records and task details to recommend fair solutions. If either party disputes the outcome, a manual review process will be conducted.
+
+---
+
 ## 🚀 Quick Start
 
 ### Prerequisites
