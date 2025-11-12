@@ -66,6 +66,30 @@ WeBond/
 
 ---
 
+## 🧠 AI Core Functions
+
+### 1. AI Smart Matching Engine
+- Multi-dimensional matching across task content, solver skills, location, language proficiency, historical ratings, and completion rates.
+- Core value: boost task success rate, shorten wait time, and continuously refine accuracy.
+- Tech focus: LLM + Embedding + Ranking.
+
+### 2. Fraud & Risk Detection
+- Monitors task descriptions, chat logs, and transactions in real time to detect suspicious activity, fake identities, or prohibited tasks.
+- Core value: safeguard platform reputation, block scams and money laundering, and ease manual reviews.
+- Tech focus: NLP + Anomaly Detection.
+
+### 3. Automated Task Assistant
+- Automatically refines task descriptions, produces standardized task cards, and fills in missing details through guided prompts.
+- Core value: cut miscommunication, raise completion satisfaction, and support first-time users.
+- Tech focus: LLM + Template Engine.
+
+### 4. AI Dispute Resolution
+- Analyzes task history, conversation context, and delivery evidence to draft preliminary arbitration and payout recommendations.
+- Core value: accelerate dispute handling, reduce manual effort, and strengthen transparency and trust.
+- Tech focus: Dialogue Analysis + Rule Engine.
+
+---
+
 ## 🚀 Quick Start
 
 ### Prerequisites
