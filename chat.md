@@ -3,7 +3,7 @@
 ## Project Overview
 **WeBond** is an AI-powered connection platform connecting non-locals and locals in Hong Kong for daily tasks, cultural exchange, and earning opportunities. This document chronicles the AI-assisted development process.
 
-**Live Demo:** https://webond-v1.netlify.app/
+**Live Demo:** https://webond-v2.netlify.app/
 
 ---
 
