@@ -4,7 +4,7 @@
 
 WeBond connects non-local residents (international students, expats, immigrants) with local helpers for everyday tasks like translation, navigation, visa assistance, and administrative help.
 
-click this link to check out the website: https://webond-v1.netlify.app/
+click this link to check out the website: https://webond-v2.netlify.app/
 
 ---
 
