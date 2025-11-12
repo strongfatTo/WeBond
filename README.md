@@ -68,25 +68,21 @@ WeBond/
 
 ## 🧠 AI Core Functions
 
-### 1. AI Smart Matching Engine
-- Multi-dimensional matching across task content, solver skills, location, language proficiency, historical ratings, and completion rates.
-- Core value: boost task success rate, shorten wait time, and continuously refine accuracy.
-- Tech focus: LLM + Embedding + Ranking.
+### 1. Intelligent Matching Engine
+- **Core Function**: Connects task raisers and solvers efficiently.
+- **Matching Factors**: Skills, location, language, availability, and past ratings.
 
-### 2. Fraud & Risk Detection
-- Monitors task descriptions, chat logs, and transactions in real time to detect suspicious activity, fake identities, or prohibited tasks.
-- Core value: safeguard platform reputation, block scams and money laundering, and ease manual reviews.
-- Tech focus: NLP + Anomaly Detection.
+### 2. Fraud & Risk Manager
+- **Core Function**: Detects suspicious behavior, fake accounts, and scams in real time to maintain compliance with local regulations.
 
-### 3. Automated Task Assistant
-- Automatically refines task descriptions, produces standardized task cards, and fills in missing details through guided prompts.
-- Core value: cut miscommunication, raise completion satisfaction, and support first-time users.
-- Tech focus: LLM + Template Engine.
+### 3. Task Description Enhancer
+- **Core Functions**:
+  - Helps users write clear, bilingual (English + Chinese) task descriptions.
+  - Suggests fair pay ranges based on task type and market data.
+  - Estimates reasonable completion time for each task.
 
-### 4. AI Dispute Resolution
-- Analyzes task history, conversation context, and delivery evidence to draft preliminary arbitration and payout recommendations.
-- Core value: accelerate dispute handling, reduce manual effort, and strengthen transparency and trust.
-- Tech focus: Dialogue Analysis + Rule Engine.
+### 4. Dispute Resolution Engine
+- **Core Function**: In case of disagreements, AI analyzes chat records and task details to recommend fair solutions. If either party disputes the outcome, a manual review process will be conducted.
 
 ---
 
